@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/pet/:slug", "destination": "/pet.html" },
+    { "source": "/pet", "destination": "/pet.html" }
+  ]
+}
