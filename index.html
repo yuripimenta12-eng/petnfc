@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PetTag — Painel do Dono</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #F7F5F0;
+  --surface:  #FFFFFF;
+  --border:   #E4E1D9;
+  --text:     #1A1814;
+  --muted:    #6B6760;
+  --accent:   #2D6A4F;
+  --accent2:  #52B788;
+  --warn:     #E07B39;
+  --danger:   #C1343A;
+  --radius:   14px;
+  --shadow:   0 2px 16px rgba(0,0,0,0.06);
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+h1, h2, h3 { font-family: 'Sora', sans-serif; }
+
+/* ── Auth Screen ──────────────────────────────────────────── */
+#auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.logo { text-align: center; margin-bottom: 2rem; }
+.logo-icon { font-size: 48px; }
+.logo h1 { font-size: 24px; color: var(--accent); margin-top: 8px; }
+.logo p  { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+.auth-tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 10px; margin-bottom: 1.5rem; }
+.auth-tab  { flex: 1; padding: 8px; border: none; background: transparent; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); font-family: 'Nunito', sans-serif; transition: all .15s; }
+.auth-tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.field input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); transition: border-color .15s; }
+.field input:focus { outline: none; border-color: var(--accent2); }
+
+.btn-full { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; transition: opacity .15s; }
+.btn-full:hover { opacity: .88; }
+.btn-full:disabled { opacity: .5; cursor: default; }
+
+#auth-error { color: var(--danger); font-size: 13px; text-align: center; margin-top: 8px; min-height: 18px; }
+
+/* ── App Layout ───────────────────────────────────────────── */
+#app-screen { display: none; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-logo { font-family: 'Sora', sans-serif; font-size: 18px; color: var(--accent); font-weight: 600; }
+.topbar-logo span { font-size: 22px; }
+.btn-logout { padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 8px; background: transparent; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); font-family: 'Nunito', sans-serif; }
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+.main { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
+
+/* ── Pet List ─────────────────────────────────────────────── */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.section-header h2 { font-size: 20px; }
+.btn-add { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+#pets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+
+.pet-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: box-shadow .15s, transform .1s;
+  position: relative;
+}
+.pet-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.pet-card-avatar { font-size: 40px; margin-bottom: 10px; }
+.pet-card-name { font-size: 18px; font-weight: 700; font-family: 'Sora', sans-serif; }
+.pet-card-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.pet-card-tag { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #D8F3DC; color: var(--accent); }
+
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+.empty-state .icon { font-size: 56px; margin-bottom: 1rem; }
+.empty-state p { font-size: 16px; }
+
+/* ── Drawer / Form ────────────────────────────────────────── */
+.drawer-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.drawer-overlay.open { display: flex; }
+
+.drawer {
+  background: var(--surface);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 2rem;
+  position: relative;
+}
+
+.drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.drawer-header h2 { font-size: 20px; }
+.btn-close { width: 32px; height: 32px; border: none; background: var(--bg); border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.form-section-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 1.5rem 0 .75rem; }
+
+.emoji-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+.emoji-opt { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 2.5px solid transparent; background: var(--bg); transition: all .15s; }
+.emoji-opt.selected { border-color: var(--accent2); background: #D8F3DC; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+.field select:focus { outline: none; border-color: var(--accent2); }
+.field textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); resize: none; min-height: 80px; }
+.field textarea:focus { outline: none; border-color: var(--accent2); }
+
+.drawer-footer { display: flex; gap: 10px; margin-top: 1.5rem; }
+.btn-save   { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-delete { flex: 1; padding: 12px; background: transparent; border: 1.5px solid var(--danger); color: var(--danger); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+/* ── QR Drawer ─────────────────────────────────────────────── */
+#qr-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+#qr-modal.open { display: flex; }
+.qr-card { background: var(--surface); border-radius: 20px; padding: 2rem; max-width: 360px; width: 100%; text-align: center; }
+.qr-card h3 { font-size: 18px; margin-bottom: 6px; }
+.qr-card p  { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+#qr-container { display: flex; justify-content: center; margin-bottom: 1rem; }
+.qr-url { font-family: monospace; font-size: 12px; color: var(--muted); background: var(--bg); padding: 8px 12px; border-radius: 8px; word-break: break-all; margin-bottom: 1rem; }
+.qr-buttons { display: flex; gap: 8px; }
+.btn-qr-dl  { flex: 1; padding: 10px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-qr-cl  { flex: 1; padding: 10px; background: transparent; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: #1A1814; color: white; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 999; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ── AUTH ─────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo">
+      <div class="logo-icon">🐾</div>
+      <h1>PetTag</h1>
+      <p>Tag NFC & QR Code para seu pet</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="authMode('login')">Entrar</button>
+      <button class="auth-tab" onclick="authMode('register')">Criar conta</button>
+    </div>
+    <div class="field"><label>E-mail</label><input type="email" id="auth-email" placeholder="seu@email.com" /></div>
+    <div class="field"><label>Senha</label><input type="password" id="auth-pass" placeholder="••••••••" /></div>
+    <button class="btn-full" id="auth-btn" onclick="doAuth()">Entrar</button>
+    <p id="auth-error"></p>
+  </div>
+</div>
+
+<!-- ── APP ──────────────────────────────────────────────── -->
+<div id="app-screen">
+  <nav class="topbar">
+    <div class="topbar-logo"><span>🐾</span> PetTag</div>
+    <button class="btn-logout" onclick="doLogout()">Sair</button>
+  </nav>
+  <div class="main">
+    <div class="section-header">
+      <h2>Meus pets</h2>
+      <button class="btn-add" onclick="openDrawer(null)">+ Adicionar pet</button>
+    </div>
+    <div id="pets-grid">
+      <div class="empty-state">
+        <div class="icon">🐾</div>
+        <p>Carregando seus pets...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FORM DRAWER ───────────────────────────────────────── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerIfOutside(event)">
+  <div class="drawer">
+    <div class="drawer-header">
+      <h2 id="drawer-title">Novo pet</h2>
+      <button class="btn-close" onclick="closeDrawer()">✕</button>
+    </div>
+
+    <div class="form-section-title">Ícone</div>
+    <div class="emoji-picker" id="emoji-picker">
+      <div class="emoji-opt selected" data-e="🐶" onclick="pickEmoji(this)">🐶</div>
+      <div class="emoji-opt" data-e="🐱" onclick="pickEmoji(this)">🐱</div>
+      <div class="emoji-opt" data-e="🐰" onclick="pickEmoji(this)">🐰</div>
+      <div class="emoji-opt" data-e="🐦" onclick="pickEmoji(this)">🐦</div>
+      <div class="emoji-opt" data-e="🐟" onclick="pickEmoji(this)">🐟</div>
+      <div class="emoji-opt" data-e="🐢" onclick="pickEmoji(this)">🐢</div>
+      <div class="emoji-opt" data-e="🐹" onclick="pickEmoji(this)">🐹</div>
+      <div class="emoji-opt" data-e="🦜" onclick="pickEmoji(this)">🦜</div>
+    </div>
+
+    <div class="form-section-title">Dados do pet</div>
+    <div class="form-row">
+      <div class="field"><label>Nome *</label><input type="text" id="f-name" placeholder="Thor" /></div>
+      <div class="field"><label>Espécie</label>
+        <select id="f-species">
+          <option>Cão</option><option>Gato</option><option>Pássaro</option>
+          <option>Coelho</option><option>Peixe</option><option>Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Raça</label><input type="text" id="f-breed" placeholder="Golden Retriever" /></div>
+      <div class="field"><label>Idade</label><input type="text" id="f-age" placeholder="3 anos" /></div>
+    </div>
+    <div class="field"><label>Observações / Condições de saúde</label>
+      <textarea id="f-obs" placeholder="Ex: alérgico a frango, usa antipulgas mensal, microchipado..."></textarea>
+    </div>
+
+    <div class="form-section-title">Contato do dono</div>
+    <div class="form-row">
+      <div class="field"><label>Nome *</label><input type="text" id="f-owner-name" placeholder="Carlos Silva" /></div>
+      <div class="field"><label>Celular *</label><input type="tel" id="f-owner-phone" placeholder="(71) 99999-1234" /></div>
+    </div>
+
+    <div class="form-section-title">Veterinário (opcional)</div>
+    <div class="form-row">
+      <div class="field"><label>Nome / Clínica</label><input type="text" id="f-vet-name" placeholder="Dr. Ana — PetVida" /></div>
+      <div class="field"><label>Telefone</label><input type="tel" id="f-vet-phone" placeholder="(71) 3333-5678" /></div>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-save" onclick="savePetForm()">Salvar</button>
+      <button class="btn-delete" id="btn-delete" onclick="deletePetForm()" style="display:none">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── QR MODAL ──────────────────────────────────────────── -->
+<div id="qr-modal" onclick="closeQRIfOutside(event)">
+  <div class="qr-card">
+    <h3 id="qr-pet-name">QR Code do Thor</h3>
+    <p>Imprima e cole na coleira. Quem escanear verá os dados do pet.</p>
+    <div id="qr-container"></div>
+    <div class="qr-url" id="qr-url-text"></div>
+    <div class="qr-buttons">
+      <button class="btn-qr-dl" onclick="downloadQR()">⬇ Baixar PNG</button>
+      <button class="btn-qr-cl" onclick="copyQRUrl()">📋 Copiar URL</button>
+    </div>
+    <button class="btn-qr-cl" style="width:100%;margin-top:8px" onclick="closeQR()">Fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── SCRIPTS ───────────────────────────────────────────── -->
+<script type="module">
+// ⚠️  Ajuste o caminho se necessário
+import { auth, db, onAuthStateChanged, signInWithEmailAndPassword,
+         createUserWithEmailAndPassword, signOut,
+         savePet, getUserPets, getPetBySlug }
+  from "./src/firebase.js";
+import { collection, deleteDoc, doc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── Domínio público onde você hospedará o projeto ─────────
+const PUBLIC_BASE = "https://seusite.com/pet"; // ← Altere após hospedar
+
+// ── Auth state ────────────────────────────────────────────
+let currentUser = null;
+let currentPets = [];
+let editingPetId = null;
+let currentEmoji = "🐶";
+let currentQRUrl  = "";
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("app-screen").style.display  = "block";
+    await loadPets();
+  } else {
+    document.getElementById("auth-screen").style.display = "flex";
+    document.getElementById("app-screen").style.display  = "none";
+  }
+});
+
+// ── Auth actions ─────────────────────────────────────────
+let authModeVal = "login";
+window.authMode = (m) => {
+  authModeVal = m;
+  document.querySelectorAll(".auth-tab").forEach((t,i) => t.classList.toggle("active", (i===0 && m==="login") || (i===1 && m==="register")));
+  document.getElementById("auth-btn").textContent = m === "login" ? "Entrar" : "Criar conta";
+  document.getElementById("auth-error").textContent = "";
+};
+
+window.doAuth = async () => {
+  const email = document.getElementById("auth-email").value.trim();
+  const pass  = document.getElementById("auth-pass").value;
+  const errEl = document.getElementById("auth-error");
+  errEl.textContent = "";
+  if (!email || !pass) { errEl.textContent = "Preencha e-mail e senha."; return; }
+  try {
+    if (authModeVal === "login") {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    }
+  } catch (e) {
+    const msgs = {
+      "auth/user-not-found": "Usuário não encontrado.",
+      "auth/wrong-password": "Senha incorreta.",
+      "auth/email-already-in-use": "E-mail já cadastrado.",
+      "auth/weak-password": "Senha muito fraca (mín. 6 caracteres).",
+      "auth/invalid-email": "E-mail inválido."
+    };
+    errEl.textContent = msgs[e.code] || "Erro: " + e.message;
+  }
+};
+
+window.doLogout = () => signOut(auth);
+
+// ── Load pets ─────────────────────────────────────────────
+async function loadPets() {
+  currentPets = await getUserPets(currentUser.uid);
+  renderPets();
+}
+
+function renderPets() {
+  const grid = document.getElementById("pets-grid");
+  if (!currentPets.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">🐾</div><p>Nenhum pet cadastrado ainda.<br/>Clique em "+ Adicionar pet".</p></div>`;
+    return;
+  }
+  grid.innerHTML = currentPets.map(p => `
+    <div class="pet-card" onclick="openDrawer('${p.id}')">
+      <div class="pet-card-avatar">${p.emoji || "🐾"}</div>
+      <div class="pet-card-name">${p.name}</div>
+      <div class="pet-card-sub">${p.species} • ${p.breed || "—"}</div>
+      <div class="pet-card-tag">Tag ativa</div>
+      <button onclick="event.stopPropagation(); showQR('${p.id}')"
+        style="position:absolute;top:1rem;right:1rem;border:none;background:var(--bg);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent)">
+        QR
+      </button>
+    </div>`).join("");
+}
+
+// ── Drawer helpers ────────────────────────────────────────
+window.openDrawer = (petId) => {
+  editingPetId = petId;
+  const pet = petId ? currentPets.find(p => p.id === petId) : null;
+  document.getElementById("drawer-title").textContent = pet ? "Editar pet" : "Novo pet";
+  document.getElementById("btn-delete").style.display = pet ? "block" : "none";
+  document.getElementById("f-name").value        = pet?.name        || "";
+  document.getElementById("f-species").value     = pet?.species     || "Cão";
+  document.getElementById("f-breed").value       = pet?.breed       || "";
+  document.getElementById("f-age").value         = pet?.age         || "";
+  document.getElementById("f-obs").value         = pet?.obs         || "";
+  document.getElementById("f-owner-name").value  = pet?.ownerName   || "";
+  document.getElementById("f-owner-phone").value = pet?.ownerPhone  || "";
+  document.getElementById("f-vet-name").value    = pet?.vetName     || "";
+  document.getElementById("f-vet-phone").value   = pet?.vetPhone    || "";
+  currentEmoji = pet?.emoji || "🐶";
+  document.querySelectorAll(".emoji-opt").forEach(o => o.classList.toggle("selected", o.dataset.e === currentEmoji));
+  document.getElementById("drawer-overlay").classList.add("open");
+};
+
+window.closeDrawer = () => document.getElementById("drawer-overlay").classList.remove("open");
+window.closeDrawerIfOutside = (e) => { if (e.target.id === "drawer-overlay") closeDrawer(); };
+
+window.pickEmoji = (el) => {
+  document.querySelectorAll(".emoji-opt").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  currentEmoji = el.dataset.e;
+};
+
+window.savePetForm = async () => {
+  const name = document.getElementById("f-name").value.trim();
+  const ownerName  = document.getElementById("f-owner-name").value.trim();
+  const ownerPhone = document.getElementById("f-owner-phone").value.trim();
+  if (!name || !ownerName || !ownerPhone) { showToast("Preencha nome, dono e telefone!"); return; }
+  const data = {
+    emoji: currentEmoji,
+    name,
+    species:    document.getElementById("f-species").value,
+    breed:      document.getElementById("f-breed").value,
+    age:        document.getElementById("f-age").value,
+    obs:        document.getElementById("f-obs").value,
+    ownerName,
+    ownerPhone,
+    vetName:    document.getElementById("f-vet-name").value,
+    vetPhone:   document.getElementById("f-vet-phone").value,
+    updatedAt:  new Date().toISOString()
+  };
+  try {
+    const id = await savePet(currentUser.uid, data, editingPetId);
+    if (!editingPetId) currentPets.push({ id, ...data });
+    else { const idx = currentPets.findIndex(p => p.id === editingPetId); currentPets[idx] = { id, ...data }; }
+    renderPets();
+    closeDrawer();
+    showToast("✅ Pet salvo com sucesso!");
+    if (!editingPetId) showQR(id);
+  } catch (e) { showToast("Erro ao salvar: " + e.message); }
+};
+
+window.deletePetForm = async () => {
+  if (!editingPetId) return;
+  if (!confirm("Remover este pet? A tag NFC/QR deixará de funcionar.")) return;
+  await deleteDoc(doc(db, "users", currentUser.uid, "pets", editingPetId));
+  currentPets = currentPets.filter(p => p.id !== editingPetId);
+  renderPets();
+  closeDrawer();
+  showToast("Pet removido.");
+};
+
+// ── QR Code ────────────────────────────────────────────────
+window.showQR = (petId) => {
+  const url = `${PUBLIC_BASE}/${currentUser.uid}_${petId}`;
+  currentQRUrl = url;
+  const pet = currentPets.find(p => p.id === petId);
+  document.getElementById("qr-pet-name").textContent = `QR Code — ${pet?.name || "Pet"}`;
+  document.getElementById("qr-url-text").textContent = url;
+  const container = document.getElementById("qr-container");
+  container.innerHTML = "";
+  new QRCode(container, { text: url, width: 200, height: 200, colorDark: "#2D6A4F", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+  document.getElementById("qr-modal").classList.add("open");
+};
+
+window.closeQR = () => document.getElementById("qr-modal").classList.remove("open");
+window.closeQRIfOutside = (e) => { if (e.target.id === "qr-modal") closeQR(); };
+
+window.downloadQR = () => {
+  const canvas = document.querySelector("#qr-container canvas");
+  if (!canvas) return;
+  const a = document.createElement("a");
+  a.download = "qrcode-pet.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+};
+
+window.copyQRUrl = () => {
+  navigator.clipboard.writeText(currentQRUrl);
+  showToast("📋 URL copiada!");
+};
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+window.showToast = showToast;
+</script>
+
+</body>
+</html>
