@@ -2,5 +2,10 @@
   "rewrites": [
     { "source": "/pet/:slug", "destination": "/pet.html" },
     { "source": "/pet", "destination": "/pet.html" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/pet/(.*)", "dest": "/pet.html" },
+    { "src": "/(.*)", "status": 404, "dest": "/404.html" }
   ]
 }
