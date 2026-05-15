@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagina nao encontrada — PetNFC</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+feat: adicionar pagina 404 customizada    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #F7F5F0; --surface: #FFFFFF; --border: #E4E1D9; --text: #1A1814; --muted: #6B6760; --accent: #2D6A4F; --accent2: #52B788; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+    .container { max-width: 420px; width: 100%; }
+    .icon { font-size: 80px; margin-bottom: 1rem; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    h1 { font-family: 'Sora', sans-serif; font-size: 28px; color: var(--accent); margin-bottom: 0.5rem; }
+    .code { font-size: 64px; font-family: 'Sora', sans-serif; font-weight: 700; color: var(--border); line-height: 1; margin-bottom: 0.5rem; }
+    p { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 2rem; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: var(--accent); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; text-decoration: none; transition: opacity .15s; }
+    .btn:hover { opacity: .88; }
+    .logo { margin-bottom: 2rem; }
+    .logo img { height: 48px; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="PetNFC" />
+    </div>
+    <div class="code">404</div>
+    <div class="icon">&#x1F43E;</div>
+    <h1>Pet nao encontrado aqui!</h1>
+    <p>Esta pagina nao existe ou o link pode estar errado. Se voce escaneou uma tag, peca ao dono para verificar o QR Code.</p>
+    <a href="/" class="btn">&#x1F3E0; Ir para o inicio</a>
+  </div>
+</body>
+</html>
