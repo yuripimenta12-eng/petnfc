@@ -5,88 +5,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🐾 Encontrei um pet!</title>
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#2D6A4F" />
+  <meta name="theme-color" content="#FF8320" />
+  <meta name="description" content="Tag NFC — informações do pet encontrado" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #2D6A4F; --green2: #52B788; --green-bg: #D8F3DC;
-      --amber: #E07B39; --amber-bg: #FFF0E0;
+      --orange: #FF8320; --orange-dark: #E06E10;
+      --teal: #00C7B2; --teal-dark: #00A898;
+      --dark: #414141; --black: #000000;
       --red: #C1343A; --red-bg: #FDECEA;
-      --text: #1A1814; --muted: #6B6760; --border: #E4E1D9;
-      --bg: #F7F5F0; --surface: #FFFFFF;
+      --bg: #FFF4E0; --surface: #FFFFFF;
+      --border: #F0D9B5; --muted: #414141;
     }
-    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 2rem; }
-    #state-loading, #state-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem; }
-    .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--green2); border-radius: 50%; animation: spin .8s linear infinite; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--black); min-height: 100vh; padding-bottom: 2rem; }
+    #state-loading, #state-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem; background: var(--bg); }
+    .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     #state-error .icon { font-size: 56px; }
     #state-error h2 { font-family: 'Sora', sans-serif; font-size: 22px; }
     #state-error p { color: var(--muted); font-size: 15px; }
-    #state-error a { display:inline-block;margin-top:1.5rem;padding:12px 28px;background:var(--green);color:white;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px; }
+    #state-error a { display:inline-block;margin-top:1.5rem;padding:12px 28px;background:var(--orange);color:white;border-radius:12px;text-decoration:none;font-weight:700; }
     #state-pet { display: none; }
     .pet-page { max-width: 460px; margin: 0 auto; padding: 0 1rem; }
-    .pet-header { background: var(--green); border-radius: 0 0 28px 28px; padding: 2rem 2rem 3.5rem; text-align: center; position: relative; overflow: hidden; }
+
+    /* HEADER */
+    .pet-header { background: var(--orange); border-radius: 0 0 28px 28px; padding: 2rem 2rem 3.5rem; text-align: center; position: relative; }
     .pet-header.lost { background: var(--red); }
-    .pet-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); margin: 0 auto 1rem; display: block; }
-    .pet-emoji-wrap { width: 96px; height: 96px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; margin: 0 auto 1rem; border: 3px solid rgba(255,255,255,0.3); }
+    .pet-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.6); margin: 0 auto 1rem; display: block; }
+    .pet-emoji-wrap { width: 96px; height: 96px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; margin: 0 auto 1rem; border: 3px solid rgba(255,255,255,0.35); }
     .pet-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: white; }
-    .pet-header .sub { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+    .pet-header .sub { font-size: 14px; color: rgba(255,255,255,0.85); margin-top: 4px; }
     .sex-badge { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
-    .sex-badge.macho { background: rgba(74,144,217,0.3); color: #B8D9F5; }
-    .sex-badge.femea { background: rgba(232,124,154,0.3); color: #F5C0D2; }
-    /* LOST BANNER */
+    .sex-badge.macho { background: rgba(255,255,255,0.25); color: white; }
+    .sex-badge.femea { background: rgba(255,255,255,0.25); color: white; }
+
+    /* BANNERS */
     .lost-banner { background: var(--red-bg); border: 2px solid var(--red); border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin: -1.25rem 0 1.25rem; position: relative; z-index: 2; }
     .lost-banner .icon { font-size: 32px; flex-shrink: 0; }
     .lost-banner strong { display: block; font-size: 16px; font-weight: 800; color: var(--red); }
     .lost-banner p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-    /* FOUND BANNER */
-    .found-banner { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin: -1.25rem 0 1.25rem; position: relative; z-index: 2; }
+    .found-banner { background: rgba(255,131,32,0.10); border: 1.5px solid var(--orange); border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin: -1.25rem 0 1.25rem; position: relative; z-index: 2; }
     .found-banner .icon { font-size: 28px; flex-shrink: 0; }
-    .found-banner strong { display: block; font-size: 15px; font-weight: 700; color: var(--amber); }
+    .found-banner strong { display: block; font-size: 15px; font-weight: 700; color: var(--orange-dark); }
     .found-banner p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* INFO */
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
-    .info-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
-    .info-pill .lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-    .info-pill .val { font-size: 14px; font-weight: 600; margin-top: 2px; }
-    .vaccines-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
-    .vaccines-section .lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .info-pill { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; }
+    .info-pill .lbl { font-size: 10px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: .05em; }
+    .info-pill .val { font-size: 14px; font-weight: 600; margin-top: 2px; color: var(--black); }
+
+    /* VACCINES */
+    .vaccines-section { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
+    .vaccines-section .lbl { font-size: 11px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
     .vaccines-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .vac-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
     .vac-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
-    .vac-dot.yes { background: var(--green); }
+    .vac-dot.yes { background: var(--orange); }
     .vac-dot.no { background: var(--border); }
-    .obs-box { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
-    .obs-box .lbl { font-size: 11px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-    .obs-box p { font-size: 14px; color: #7A5020; line-height: 1.6; }
+
+    /* OBS */
+    .obs-box { background: rgba(255,131,32,0.07); border: 1.5px solid var(--orange); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .obs-box .lbl { font-size: 11px; font-weight: 800; color: var(--orange-dark); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .obs-box p { font-size: 14px; color: var(--dark); line-height: 1.6; }
+
+    /* ADDRESS */
+    .address-box { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px; }
+    .address-box .addr-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .address-box .addr-content .lbl { font-size: 10px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .address-box .addr-content p { font-size: 14px; font-weight: 600; color: var(--black); line-height: 1.5; }
+
+    /* CONTACTS */
     .contact-section { margin-bottom: 1.5rem; }
-    .contact-section h3 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-    .contact-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--text); margin-bottom: 8px; transition: box-shadow .15s, transform .1s; }
-    .contact-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .contact-section h3 { font-size: 11px; font-weight: 800; color: var(--orange); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .contact-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--black); margin-bottom: 8px; transition: box-shadow .15s, transform .1s; }
+    .contact-btn:hover { box-shadow: 0 4px 16px rgba(255,131,32,0.15); transform: translateY(-1px); border-color: var(--orange); }
     .contact-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .contact-icon.call { background: var(--green-bg); }
-    .contact-icon.whats { background: #D9F5E3; }
-    .contact-icon.vet { background: #E6F0FB; }
+    .contact-icon.call { background: rgba(255,131,32,0.12); }
+    .contact-icon.whats { background: rgba(0,199,178,0.12); }
+    .contact-icon.vet { background: rgba(65,65,65,0.08); }
     .contact-info .name { font-size: 15px; font-weight: 700; }
     .contact-info .phone { font-size: 13px; color: var(--muted); margin-top: 2px; }
-    .contact-cta { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+    .contact-cta { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--orange); flex-shrink: 0; }
     .footer { text-align: center; padding-top: 1rem; }
     .footer p { font-size: 12px; color: var(--muted); }
-    .footer a { color: var(--green2); text-decoration: none; font-weight: 600; }
-    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1A1814; color: white; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity .4s; z-index: 9999; white-space: nowrap; pointer-events: none; }
+    .footer a { color: var(--orange); text-decoration: none; font-weight: 700; }
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #000; color: white; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity .4s; z-index: 9999; white-space: nowrap; pointer-events: none; }
     #toast.show { opacity: 1; }
-    #toast.green { background: var(--green); }
-    #toast.red { background: var(--red); }
   </style>
 </head>
 <body>
 
-<div id="state-loading">
-  <div class="spinner"></div>
-  <p style="color:#6B6760">Carregando dados do pet...</p>
-</div>
+<div id="state-loading"><div class="spinner"></div><p style="color:#414141">Carregando dados do pet...</p></div>
+
 <div id="state-error" style="display:none">
   <div class="icon">😕</div>
   <h2>Tag não encontrada</h2>
@@ -102,7 +116,6 @@
     <p class="sub" id="p-sub">—</p>
     <span class="sex-badge" id="p-sex" style="display:none"></span>
   </div>
-
   <div class="pet-page">
     <div id="banner-container"></div>
     <div class="info-grid" id="info-grid"></div>
@@ -114,10 +127,15 @@
       <div class="lbl">⚠️ Observações</div>
       <p id="p-obs"></p>
     </div>
-    <div class="contact-section" id="contact-section"></div>
-    <div class="footer">
-      <p>Tag gerada por <a href="/">PetNFC</a> · Identifique seu pet com NFC & QR Code</p>
+    <div class="address-box" id="address-box" style="display:none">
+      <div class="addr-icon">📍</div>
+      <div class="addr-content">
+        <div class="lbl">Endereço do Dono</div>
+        <p id="p-address"></p>
+      </div>
     </div>
+    <div class="contact-section" id="contact-section"></div>
+    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> · Identifique seu pet com NFC & QR Code</p></div>
   </div>
 </div>
 
@@ -132,63 +150,45 @@
 
   const vaccineNames = { raiva:'Raiva', v8v10:'V8/V10', gripe:'Gripe', giardia:'Giardia', leptospirose:'Leptospirose', leishmaniose:'Leishmaniose' };
 
-  function showToast(msg, type='') {
+  function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'show' + (type ? ' ' + type : '');
+    t.textContent = msg; t.className = 'show';
     setTimeout(() => t.className = '', 3500);
-  }
-
-  function showError() {
-    document.getElementById('state-loading').style.display = 'none';
-    document.getElementById('state-error').style.display   = 'flex';
   }
 
   async function sendScanEmail(pet) {
     try {
       emailjs.init(EMAILJS_PUBLIC_KEY);
-      const now = new Date();
-      const scanTime = now.toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
-      const petUrl = location.href;
+      const scanTime = new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        pet_name:   pet.name,
-        owner_name: pet.ownerName || 'Dono',
-        scan_time:  scanTime,
-        name:       pet.ownerName || 'Dono',
-        email:      'yuripimenta12@gmail.com',
-        pet_url:    petUrl,
+        pet_name: pet.name, owner_name: pet.ownerName || 'Dono',
+        scan_time: scanTime, name: pet.ownerName || 'Dono',
+        email: 'yuripimenta12@gmail.com', pet_url: location.href,
       });
-      console.log('[EmailJS] Email de scan enviado!');
-    } catch(err) {
-      console.warn('[EmailJS] Falha ao enviar email:', err);
-    }
+    } catch(err) { console.warn('[EmailJS]', err); }
   }
 
   async function init() {
     const parts = location.pathname.split('/');
     const slug = parts[parts.length - 1] || new URLSearchParams(location.search).get('slug');
     if (!slug || slug === 'pet') { showError(); return; }
-
     try {
       const pet = await getPetBySlug(slug);
       if (!pet) { showError(); return; }
-
-      // Registra scan + envia email simultaneamente
       const [userId] = slug.split('_');
       incrementScan(userId, pet.id);
       sendScanEmail(pet);
-
-      renderPet(pet, slug);
-    } catch(err) {
-      console.error(err);
-      showError();
-    }
+      renderPet(pet);
+    } catch(err) { console.error(err); showError(); }
   }
 
-  function renderPet(pet, slug) {
-    document.title = '🐾 ' + pet.name + ' — PetNFC';
+  function showError() {
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('state-error').style.display = 'flex';
+  }
 
-    // Header
+  function renderPet(pet) {
+    document.title = '🐾 ' + pet.name + ' — PetNFC';
     if (pet.lost) document.getElementById('pet-header').classList.add('lost');
 
     if (pet.photo) {
@@ -209,46 +209,28 @@
       el.className = 'sex-badge ' + (pet.sex === 'M' ? 'macho' : 'femea');
     }
 
-    // Banner: perdido ou encontrado
-    const bannerEl = document.getElementById('banner-container');
-    if (pet.lost) {
-      bannerEl.innerHTML = `<div class="lost-banner">
-        <div class="icon">🚨</div>
-        <div>
-          <strong>Pet Perdido!</strong>
-          <p>Este pet está desaparecido. Por favor entre em contato com o dono urgente!</p>
-        </div>
-      </div>`;
-    } else {
-      bannerEl.innerHTML = `<div class="found-banner">
-        <div class="icon">🔔</div>
-        <div>
-          <strong>Pet encontrado!</strong>
-          <p>Por favor entre em contato com o dono abaixo.</p>
-        </div>
-      </div>`;
-    }
+    // Banner
+    document.getElementById('banner-container').innerHTML = pet.lost
+      ? `<div class="lost-banner"><div class="icon">🚨</div><div><strong>Pet Perdido!</strong><p>Este pet está desaparecido. Contate o dono urgente!</p></div></div>`
+      : `<div class="found-banner"><div class="icon">🔔</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>`;
 
     // Info grid
     const infoItems = [
       pet.species && { lbl:'Espécie', val:pet.species },
-      pet.breed   && { lbl:'Raça',    val:pet.breed },
-      pet.age     && { lbl:'Idade',     val:pet.age },
-      pet.color   && { lbl:'Cor',       val:pet.color },
+      pet.breed   && { lbl:'Raça',    val:pet.breed   },
+      pet.age     && { lbl:'Idade',     val:pet.age     },
+      pet.color   && { lbl:'Cor',       val:pet.color   },
     ].filter(Boolean);
     document.getElementById('info-grid').innerHTML = infoItems.map(i =>
       `<div class="info-pill"><div class="lbl">${i.lbl}</div><div class="val">${i.val}</div></div>`
     ).join('');
 
     // Vacinas
-    if (pet.vaccines) {
-      const vacs = Object.entries(pet.vaccines);
-      if (vacs.length) {
-        document.getElementById('vaccines-section').style.display = 'block';
-        document.getElementById('vaccines-list').innerHTML = vacs.map(([k,v]) =>
-          `<div class="vac-item"><div class="vac-dot ${v?'yes':'no'}"></div>${vaccineNames[k]||k}</div>`
-        ).join('');
-      }
+    if (pet.vaccines && Object.keys(pet.vaccines).length) {
+      document.getElementById('vaccines-section').style.display = 'block';
+      document.getElementById('vaccines-list').innerHTML = Object.entries(pet.vaccines).map(([k,v]) =>
+        `<div class="vac-item"><div class="vac-dot ${v?'yes':'no'}"></div>${vaccineNames[k]||k}</div>`
+      ).join('');
     }
 
     // Obs
@@ -257,31 +239,26 @@
       document.getElementById('p-obs').textContent = pet.obs;
     }
 
+    // Endereço
+    const addrParts = [pet.street, pet.neighborhood, pet.city, pet.state, pet.cep].filter(Boolean);
+    if (addrParts.length) {
+      document.getElementById('address-box').style.display = 'flex';
+      document.getElementById('p-address').textContent = addrParts.join(', ');
+    }
+
     // Contatos
-    const phone = (pet.phone || '').replace(/\D/g, '');
-    const whats = (pet.whatsapp || pet.phone || '').replace(/\D/g, '');
+    const phone = (pet.phone||'').replace(/\D/g,'');
+    const whats = (pet.whatsapp||pet.phone||'').replace(/\D/g,'');
     let contacts = '';
     if (pet.ownerName && pet.phone) {
-      contacts += `<a class="contact-btn" href="tel:+55${phone}">
-        <div class="contact-icon call">📞</div>
-        <div class="contact-info"><div class="name">${pet.ownerName}</div><div class="phone">${pet.phone}</div></div>
-        <span class="contact-cta">Ligar</span>
-      </a>`;
-      contacts += `<a class="contact-btn" href="https://wa.me/55${whats}?text=${encodeURIComponent('Olá! Encontrei seu pet '+pet.name+' 🐾')}" target="_blank">
-        <div class="contact-icon whats">💬</div>
-        <div class="contact-info"><div class="name">WhatsApp</div><div class="phone">${pet.whatsapp||pet.phone}</div></div>
-        <span class="contact-cta">Chamar</span>
-      </a>`;
+      contacts += `<a class="contact-btn" href="tel:+55${phone}"><div class="contact-icon call">📞</div><div class="contact-info"><div class="name">${pet.ownerName}</div><div class="phone">${pet.phone}</div></div><span class="contact-cta">Ligar</span></a>`;
+      contacts += `<a class="contact-btn" href="https://wa.me/55${whats}?text=${encodeURIComponent('Olá! Encontrei seu pet '+pet.name+' 🐾')}" target="_blank"><div class="contact-icon whats">💬</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">${pet.whatsapp||pet.phone}</div></div><span class="contact-cta">Chamar</span></a>`;
     }
     if (pet.vetPhone) {
-      const vp = pet.vetPhone.replace(/\D/g, '');
-      contacts += `<a class="contact-btn" href="tel:+55${vp}">
-        <div class="contact-icon vet">🏥</div>
-        <div class="contact-info"><div class="name">${pet.vetName||'Veterinário'}</div><div class="phone">${pet.vetPhone}</div></div>
-        <span class="contact-cta">Ligar</span>
-      </a>`;
+      const vp = pet.vetPhone.replace(/\D/g,'');
+      contacts += `<a class="contact-btn" href="tel:+55${vp}"><div class="contact-icon vet">🏥</div><div class="contact-info"><div class="name">${pet.vetName||'Veterinário'}</div><div class="phone">${pet.vetPhone}</div></div><span class="contact-cta">Ligar</span></a>`;
     }
-    document.getElementById('contact-section').innerHTML = '<h3>Contatos</h3>' + contacts;
+    document.getElementById('contact-section').innerHTML = '<h3>📞 Contatos</h3>' + contacts;
 
     document.getElementById('state-loading').style.display = 'none';
     document.getElementById('state-pet').style.display = 'block';
