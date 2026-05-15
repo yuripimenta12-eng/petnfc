@@ -237,6 +237,34 @@ h1, h2, h3 { font-family: 'Sora', sans-serif; }
   </div>
 </div>
 
+<!-- ETIQUETA MODAL -->
+<div id="label-modal" onclick="closeLabelIfOutside(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:20px;padding:2rem;max-width:420px;width:100%;text-align:center">
+    <h3 style="font-family:Sora,sans-serif;font-size:18px;margin-bottom:6px">🖨️ Etiqueta para imprimir</h3>
+    <p style="font-size:13px;color:#6B6760;margin-bottom:1.5rem">Cole na coleira ou carteirinha do pet</p>
+    <div id="label-preview" style="border:2px dashed #E4E1D9;border-radius:14px;padding:1.25rem;margin-bottom:1.5rem;background:#FAFAF8">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div id="label-avatar" style="width:56px;height:56px;border-radius:50%;background:#D8F3DC;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">🐾</div>
+        <div style="text-align:left">
+          <div id="label-name" style="font-family:Sora,sans-serif;font-size:18px;font-weight:700;color:#1A1814"></div>
+          <div id="label-sub" style="font-size:13px;color:#6B6760"></div>
+        </div>
+      </div>
+      <div id="label-qr" style="display:flex;justify-content:center;margin-bottom:12px"></div>
+      <div style="background:#2D6A4F;border-radius:8px;padding:8px 12px;color:white">
+        <div style="font-size:11px;opacity:0.8;margin-bottom:2px">DONO</div>
+        <div id="label-owner" style="font-size:15px;font-weight:700"></div>
+        <div id="label-phone" style="font-size:14px;opacity:0.9"></div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:#6B6760">Escaneie o QR Code para mais informações</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="printLabelNow()" style="flex:2;padding:12px;background:#2D6A4F;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif">🖨️ Imprimir</button>
+      <button onclick="closeLabel()" style="flex:1;padding:12px;background:transparent;border:1.5px solid #E4E1D9;border-radius:10px;font-size:14px;cursor:pointer;font-family:Nunito,sans-serif">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -314,6 +342,7 @@ function renderPets() {
           ${p.lost ? '✅ Achado' : '🔴 Perdido'}
         </button>
         <button onclick="event.stopPropagation();showQR('${p.id}')" style="border:none;background:var(--bg);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent)">QR</button>
+        <button onclick="event.stopPropagation();printLabel('${p.id}')" style="border:none;background:var(--bg);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)">🖨️</button>
       </div>
     </div>`).join("");
 }
@@ -437,6 +466,49 @@ window.closeQR = () => document.getElementById("qr-modal").classList.remove("ope
 window.closeQRIfOutside = (e) => { if (e.target.id==="qr-modal") closeQR(); };
 window.downloadQR = () => { const canvas=document.querySelector("#qr-container canvas"); if(!canvas)return; const a=document.createElement("a"); a.download="qrcode-pet.png"; a.href=canvas.toDataURL("image/png"); a.click(); };
 window.copyQRUrl = () => { navigator.clipboard.writeText(currentQRUrl); showToast("📋 URL copiada!"); };
+
+window.printLabel = (petId) => {
+  const pet = currentPets.find(p => p.id === petId);
+  if (!pet) return;
+  const url = PUBLIC_BASE + currentUser.uid + '_' + petId;
+
+  // Preencher modal
+  const avatarEl = document.getElementById('label-avatar');
+  if (pet.photo) {
+    avatarEl.innerHTML = '<img src="' + pet.photo + '" style="width:56px;height:56px;border-radius:50%;object-fit:cover" />';
+  } else {
+    avatarEl.textContent = pet.emoji || '🐾';
+    avatarEl.style.background = '#D8F3DC';
+  }
+  document.getElementById('label-name').textContent = pet.name || '';
+  document.getElementById('label-sub').textContent = (pet.species || '') + (pet.breed ? ' • ' + pet.breed : '');
+  document.getElementById('label-owner').textContent = pet.ownerName || '';
+  document.getElementById('label-phone').textContent = pet.ownerPhone || '';
+
+  // QR Code
+  const qrDiv = document.getElementById('label-qr');
+  qrDiv.innerHTML = '';
+  new QRCode(qrDiv, { text: url, width: 120, height: 120, colorDark: '#2D6A4F', colorLight: '#FAFAF8', correctLevel: QRCode.CorrectLevel.H });
+
+  document.getElementById('label-modal').style.display = 'flex';
+};
+
+window.closeLabel = () => { document.getElementById('label-modal').style.display = 'none'; };
+window.closeLabelIfOutside = (e) => { if (e.target.id === 'label-modal') closeLabel(); };
+
+window.printLabelNow = () => {
+  const preview = document.getElementById('label-preview').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write('<html><head><title>Etiqueta Pet</title><style>');
+  win.document.write('body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5;font-family:Nunito,sans-serif}');
+  win.document.write('.label{background:white;border:2px dashed #ccc;border-radius:14px;padding:20px;max-width:320px;width:100%;text-align:center}');
+  win.document.write('</style></head><body>');
+  win.document.write('<div class="label">' + preview + '</div>');
+  win.document.write('</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 500);
+};
 
 function showToast(msg) {
   const t = document.getElementById("toast");
