@@ -102,8 +102,7 @@ h1, h2, h3 { font-family: 'Sora', sans-serif; }
   <div class="auth-card">
     <div class="logo">
       <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet" style="height:70px;object-fit:contain;margin-bottom:8px" />
-      
-      <p>Tag NFC & QR Code para seu pet</p>
+      <p style="font-size:14px;color:var(--muted);margin-top:4px">Tag NFC & QR Code para seu pet</p>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="authMode('login')">Entrar</button>
@@ -306,8 +305,16 @@ function renderPets() {
       ${p.photo ? `<img class="pet-card-photo" src="${p.photo}" alt="foto" />` : `<div class="pet-card-avatar">${p.emoji||"🐾"}</div>`}
       <div class="pet-card-name">${p.name}</div>
       <div class="pet-card-sub">${p.species||""}${p.breed?" • "+p.breed:""}${p.sex?" • "+(p.sex==="macho"?"♂":"♀"):""}</div>
-      <div class="pet-card-tag">Tag ativa</div>
-      <button onclick="event.stopPropagation();showQR('${p.id}')" style="position:absolute;top:1rem;right:1rem;border:none;background:var(--bg);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent)">QR</button>
+      <div class="pet-card-tag" id="tag-${p.id}" style="${p.lost ? 'background:#FFE0E0;color:#C1343A;' : ''}">
+        ${p.lost ? '🔴 PERDIDO' : 'Tag ativa'}
+      </div>
+      <div style="position:absolute;top:1rem;right:1rem;display:flex;gap:4px">
+        <button onclick="event.stopPropagation();toggleLost('${p.id}', ${!!p.lost})"
+          style="border:none;background:${p.lost ? '#FFE0E0' : 'var(--bg)'};border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;color:${p.lost ? '#C1343A' : 'var(--muted)'}">
+          ${p.lost ? '✅ Achado' : '🔴 Perdido'}
+        </button>
+        <button onclick="event.stopPropagation();showQR('${p.id}')" style="border:none;background:var(--bg);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--accent)">QR</button>
+      </div>
     </div>`).join("");
 }
 
@@ -392,6 +399,18 @@ window.savePetForm = async () => {
     renderPets(); closeDrawer(); showToast("✅ Pet salvo!");
     if (!editingPetId) showQR(id);
   } catch(e) { showToast("Erro: "+e.message); }
+};
+
+window.toggleLost = async (petId, isLost) => {
+  const msg = isLost ? 'Marcar pet como encontrado?' : 'Marcar pet como PERDIDO? O banner de alerta vai aparecer na página pública.';
+  if (!confirm(msg)) return;
+  const newLost = !isLost;
+  const lostAt = newLost ? new Date().toISOString() : null;
+  await savePet(currentUser.uid, { lost: newLost, lostAt }, petId);
+  const idx = currentPets.findIndex(p => p.id === petId);
+  if (idx >= 0) { currentPets[idx].lost = newLost; currentPets[idx].lostAt = lostAt; }
+  renderPets();
+  showToast(newLost ? '🔴 Pet marcado como perdido!' : '✅ Pet marcado como encontrado!');
 };
 
 window.deletePetForm = async () => {
