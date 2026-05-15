@@ -1,113 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🐾 Encontrei um pet!</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
-<!-- EmailJS -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --green: #2D6A4F; --green2: #52B788; --green-bg: #D8F3DC;
-  --amber: #E07B39; --amber-bg: #FFF0E0;
-  --text: #1A1814; --muted: #6B6760; --border: #E4E1D9;
-  --bg: #F7F5F0; --surface: #FFFFFF;
-}
-body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 2rem; }
-#state-loading, #state-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem; }
-.spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--green2); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#state-error .icon { font-size: 56px; }
-#state-error h2 { font-family: 'Sora', sans-serif; font-size: 22px; }
-#state-error p { color: var(--muted); font-size: 15px; }
-#state-pet { display: none; }
-.pet-page { max-width: 460px; margin: 0 auto; padding: 0 1rem; }
-
-/* Header */
-.pet-header { background: var(--green); border-radius: 0 0 28px 28px; padding: 2rem 2rem 3.5rem; text-align: center; position: relative; overflow: hidden; }
-.pet-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); margin: 0 auto 1rem; display: block; }
-.pet-emoji-wrap { width: 96px; height: 96px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; margin: 0 auto 1rem; border: 3px solid rgba(255,255,255,0.3); }
-.pet-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: white; }
-.pet-header .sub { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 4px; }
-.sex-badge { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
-.sex-badge.macho { background: rgba(74,144,217,0.3); color: #B8D9F5; }
-.sex-badge.femea { background: rgba(232,124,154,0.3); color: #F5C0D2; }
-
-/* Found banner */
-.found-banner { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin: -1.25rem 0 1.25rem; position: relative; z-index: 2; }
-.found-banner .icon { font-size: 28px; flex-shrink: 0; }
-.found-banner strong { display: block; font-size: 15px; font-weight: 700; color: var(--amber); }
-.found-banner p { font-size: 13px; color: var(--muted); margin-top: 2px; }
-
-/* Info grid */
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
-.info-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
-.info-pill .lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-.info-pill .val { font-size: 14px; font-weight: 600; margin-top: 2px; }
-
-/* Tag code */
-.tag-code-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
-.tag-code-section .lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
-.tag-code-val { font-family: monospace; font-size: 16px; font-weight: 700; color: var(--text); }
-
-/* Vaccines */
-.vaccines-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
-.vaccines-section .lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-.vaccines-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.vac-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
-.vac-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
-.vac-dot.yes { background: var(--green); }
-.vac-dot.no { background: var(--border); }
-
-/* Obs */
-.obs-box { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
-.obs-box .lbl { font-size: 11px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-.obs-box p { font-size: 14px; color: #7A5020; line-height: 1.6; }
-
-/* Contacts */
-.contact-section { margin-bottom: 1.5rem; }
-.contact-section h3 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-.contact-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--text); margin-bottom: 8px; transition: box-shadow .15s, transform .1s; }
-.contact-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
-.contact-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-.contact-icon.call { background: var(--green-bg); }
-.contact-icon.whats { background: #D9F5E3; }
-.contact-icon.vet { background: #E6F0FB; }
-.contact-info .name { font-size: 15px; font-weight: 700; }
-.contact-info .phone { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.contact-cta { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); flex-shrink: 0; }
-.footer { text-align: center; padding-top: 1rem; }
-.footer p { font-size: 12px; color: var(--muted); }
-.footer a { color: var(--green2); text-decoration: none; font-weight: 600; }
-
-/* Toast de notificação */
-#email-toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #2D6A4F; color: white; padding: 12px 24px;
-  border-radius: 40px; font-size: 14px; font-weight: 600;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  opacity: 0; transition: opacity .4s;
-  z-index: 9999; white-space: nowrap; pointer-events: none;
-}
-#email-toast.show { opacity: 1; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐾 Encontrei um pet!</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#2D6A4F" />
+  <meta name="description" content="Tag NFC — informações do pet encontrado" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green: #2D6A4F; --green2: #52B788; --green-bg: #D8F3DC; --amber: #E07B39; --amber-bg: #FFF0E0; --text: #1A1814; --muted: #6B6760; --border: #E4E1D9; --bg: #F7F5F0; --surface: #FFFFFF; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 2rem; }
+    #state-loading, #state-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem; }
+    .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--green2); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #state-error .icon { font-size: 56px; }
+    #state-error h2 { font-family: 'Sora', sans-serif; font-size: 22px; }
+    #state-error p { color: var(--muted); font-size: 15px; }
+    #state-error a { display: inline-block; margin-top: 1.5rem; padding: 12px 28px; background: var(--green); color: white; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 15px; }
+    #state-pet { display: none; }
+    .pet-page { max-width: 460px; margin: 0 auto; padding: 0 1rem; }
+    .pet-header { background: var(--green); border-radius: 0 0 28px 28px; padding: 2rem 2rem 3.5rem; text-align: center; }
+    .pet-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); margin: 0 auto 1rem; display: block; }
+    .pet-emoji-wrap { width: 96px; height: 96px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 52px; margin: 0 auto 1rem; border: 3px solid rgba(255,255,255,0.3); }
+    .pet-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: white; }
+    .pet-header .sub { font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+    .sex-badge { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+    .sex-badge.macho { background: rgba(74,144,217,0.3); color: #B8D9F5; }
+    .sex-badge.femea { background: rgba(232,124,154,0.3); color: #F5C0D2; }
+    .found-banner { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 14px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px; margin: -1.25rem 0 1.25rem; position: relative; z-index: 2; }
+    .found-banner .icon { font-size: 28px; flex-shrink: 0; }
+    .found-banner strong { display: block; font-size: 15px; font-weight: 700; color: var(--amber); }
+    .found-banner p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+    .info-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
+    .info-pill .lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .info-pill .val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+    .vaccines-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
+    .vaccines-section .lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .vaccines-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .vac-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+    .vac-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+    .vac-dot.yes { background: var(--green); }
+    .vac-dot.no { background: var(--border); }
+    .obs-box { background: var(--amber-bg); border: 1.5px solid #F0C080; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .obs-box .lbl { font-size: 11px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .obs-box p { font-size: 14px; color: #7A5020; line-height: 1.6; }
+    .contact-section { margin-bottom: 1.5rem; }
+    .contact-section h3 { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .contact-btn { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--text); margin-bottom: 8px; transition: box-shadow .15s, transform .1s; }
+    .contact-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .contact-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .contact-icon.call { background: var(--green-bg); }
+    .contact-icon.whats { background: #D9F5E3; }
+    .contact-icon.vet { background: #E6F0FB; }
+    .contact-info .name { font-size: 15px; font-weight: 700; }
+    .contact-info .phone { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .contact-cta { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); flex-shrink: 0; }
+    .footer { text-align: center; padding-top: 1rem; }
+    .footer p { font-size: 12px; color: var(--muted); }
+    .footer a { color: var(--green2); text-decoration: none; font-weight: 600; }
+    #email-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2D6A4F; color: white; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; transition: opacity .4s; z-index: 9999; white-space: nowrap; pointer-events: none; }
+    #email-toast.show { opacity: 1; }
+  </style>
 </head>
 <body>
-
-<div id="state-loading">
-  <div class="spinner"></div>
-  <p style="color:#6B6760">Carregando dados do pet...</p>
-</div>
-
+<div id="state-loading"><div class="spinner"></div><p style="color:#6B6760">Carregando dados do pet...</p></div>
 <div id="state-error" style="display:none">
   <div class="icon">😕</div>
   <h2>Tag não encontrada</h2>
   <p>Este link pode ser inválido ou o pet foi removido.</p>
+  <a href="/">Ir para o início</a>
 </div>
-
 <div id="state-pet">
   <div class="pet-header">
     <img class="pet-photo" id="p-photo" src="" alt="foto" style="display:none" />
@@ -116,271 +83,85 @@ body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--te
     <p class="sub" id="p-sub">—</p>
     <span class="sex-badge" id="p-sex" style="display:none"></span>
   </div>
-
   <div class="pet-page">
-    <div id="lost-banner" style="display:none;background:#FFE0E0;border:1.5px solid #F5A0A0;border-radius:14px;padding:1rem 1.25rem;align-items:center;gap:12px;margin-bottom:1rem;position:relative;z-index:2">
-      <div style="font-size:28px;flex-shrink:0">🔴</div>
-      <div>
-        <strong style="display:block;font-size:16px;font-weight:700;color:#C1343A">⚠️ ESTE PET ESTÁ PERDIDO!</strong>
-        <p style="font-size:13px;color:#7A2020;margin-top:4px" id="lost-date"></p>
-      </div>
-    </div>
-
     <div class="found-banner">
-      <div class="icon">📍</div>
-      <div>
-        <strong>Você encontrou este pet!</strong>
-        <p>Entre em contato com o dono pelos botões abaixo.</p>
-      </div>
+      <div class="icon">🔔</div>
+      <div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div>
     </div>
-
-    <div class="info-grid">
-      <div class="info-pill"><div class="lbl">Espécie</div><div class="val" id="p-species">—</div></div>
-      <div class="info-pill"><div class="lbl">Raça</div><div class="val" id="p-breed">—</div></div>
-      <div class="info-pill"><div class="lbl">Cor</div><div class="val" id="p-color">—</div></div>
-      <div class="info-pill"><div class="lbl">Idade</div><div class="val" id="p-age">—</div></div>
-      <div class="info-pill"><div class="lbl">Peso</div><div class="val" id="p-weight">—</div></div>
-      <div class="info-pill"><div class="lbl">Nascimento</div><div class="val" id="p-birthdate">—</div></div>
-      <div class="info-pill" id="p-city-pill" style="display:none"><div class="lbl">Cidade</div><div class="val" id="p-city">—</div></div>
-      <div class="info-pill"><div class="lbl">Status</div><div class="val" style="color:var(--green)">✅ Com tag</div></div>
+    <div class="info-grid" id="info-grid"></div>
+    <div class="vaccines-section" id="vaccines-section" style="display:none">
+      <div class="lbl">💉 Vacinas</div>
+      <div class="vaccines-list" id="vaccines-list"></div>
     </div>
-
-    <div class="info-pill" id="p-address-pill" style="display:none;margin-bottom:8px">
-      <div class="lbl">📍 Endereço</div>
-      <div class="val" id="p-address" style="font-size:13px;margin-top:4px"></div>
-    </div>
-
-    <div class="tag-code-section" id="p-tagcode-section" style="display:none">
-      <div class="lbl">🏷️ Código da Tag NFC</div>
-      <div class="tag-code-val" id="p-tagcode"></div>
-    </div>
-
-    <div class="vaccines-section" id="p-vaccines-section" style="display:none">
-      <div class="lbl">💉 Saúde</div>
-      <div class="vaccines-list" id="p-vaccines-list"></div>
-    </div>
-
     <div class="obs-box" id="obs-box" style="display:none">
       <div class="lbl">⚠️ Observações</div>
       <p id="p-obs"></p>
     </div>
-
-    <div class="contact-section">
-      <h3>Contato do dono</h3>
-      <a class="contact-btn" id="btn-call-owner" href="#">
-        <div class="contact-icon call">📞</div>
-        <div class="contact-info">
-          <div class="name" id="p-owner-name">—</div>
-          <div class="phone" id="p-owner-phone">—</div>
-        </div>
-        <span class="contact-cta">Ligar</span>
-      </a>
-      <a class="contact-btn" id="btn-whats-owner" href="#">
-        <div class="contact-icon whats">💬</div>
-        <div class="contact-info">
-          <div class="name" id="p-owner-name2">—</div>
-          <div class="phone">WhatsApp</div>
-        </div>
-        <span class="contact-cta">Abrir</span>
-      </a>
-    </div>
-
-    <div class="contact-section" id="vet-section" style="display:none">
-      <h3>Veterinário</h3>
-      <a class="contact-btn" id="btn-call-vet" href="#">
-        <div class="contact-icon vet">🩺</div>
-        <div class="contact-info">
-          <div class="name" id="p-vet-name">—</div>
-          <div class="phone" id="p-vet-phone">—</div>
-        </div>
-        <span class="contact-cta">Ligar</span>
-      </a>
-    </div>
-
-    <div class="footer">
-      <p>Powered by <a href="/">PetTag 🐾</a></p>
-    </div>
+    <div class="contact-section" id="contact-section"></div>
+    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> · Identifique seu pet com NFC &amp; QR Code</p></div>
   </div>
 </div>
-
-<!-- Toast -->
-<div id="email-toast">📧 Dono notificado por e-mail!</div>
-
+<div id="email-toast"></div>
 <script type="module">
-import { getPetBySlug } from "./firebase.js";
-
-// ─── CONFIG EMAILJS ───────────────────────────────────────────
-const EMAILJS_PUBLIC_KEY  = "wMKdLso1I33GtEACr";
-const EMAILJS_SERVICE_ID  = "service_9m9t14l";
-const EMAILJS_TEMPLATE_ID = "template_s8de3rq";
-// ──────────────────────────────────────────────────────────────
-
-emailjs.init(EMAILJS_PUBLIC_KEY);
-
-function getSlug() {
-  const params = new URLSearchParams(window.location.search);
-  const path = window.location.pathname.split("/").filter(Boolean);
-  return params.get("id") || path[path.length-1] || "";
-}
-
-function showToast(msg) {
-  const t = document.getElementById("email-toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 4000);
-}
-
-async function sendNotification(pet, locationUrl) {
-  const now = new Date().toLocaleString("pt-BR", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit"
-  });
-  const pageUrl = window.location.href;
-
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      owner_name:   pet.ownerName || "Tutor",
-      pet_name:     pet.name || "seu pet",
-      scan_time:    now,
-      pet_url:      pageUrl,
-      location_url: locationUrl || "Localização não disponível",
-    });
-    showToast("📧 Dono notificado por e-mail!");
-  } catch(err) {
-    console.error("EmailJS error:", err);
+  import { getPetBySlug, incrementScan } from './firebase.js';
+  const vaccineNames = { raiva: 'Raiva', v8v10: 'V8/V10', gripe: 'Gripe', giardia: 'Giardia', leptospirose: 'Leptospirose', leishmaniose: 'Leishmaniose' };
+  async function init() {
+    const parts = location.pathname.split('/');
+    const slug = parts[parts.length-1] || new URLSearchParams(location.search).get('slug');
+    if (!slug) { showError(); return; }
+    try {
+      const pet = await getPetBySlug(slug);
+      if (!pet) { showError(); return; }
+      const [userId] = slug.split('_');
+      incrementScan(userId, pet.id);
+      renderPet(pet);
+    } catch(err) { console.error(err); showError(); }
   }
-}
-
-async function getLocation() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        resolve(`https://maps.google.com/?q=${lat},${lng}`);
-      },
-      () => resolve(null),
-      { timeout: 6000 }
-    );
-  });
-}
-
-async function load() {
-  const slug = getSlug();
-  if (!slug || slug === "pet.html") return showError();
-  try {
-    const pet = await getPetBySlug(slug);
-    if (!pet) return showError();
-    renderPet(pet);
-
-    // Pede localização e envia e-mail
-    const locationUrl = await getLocation();
-    await sendNotification(pet, locationUrl);
-
-  } catch(e) { console.error(e); showError(); }
-}
-
-function showError() {
-  document.getElementById("state-loading").style.display = "none";
-  document.getElementById("state-error").style.display = "flex";
-}
-
-function renderPet(p) {
-  // Foto ou emoji
-  if (p.photo) {
-    document.getElementById("p-photo").src = p.photo;
-    document.getElementById("p-photo").style.display = "block";
-    document.getElementById("p-emoji-wrap").style.display = "none";
-  } else {
-    document.getElementById("p-emoji-wrap").textContent = p.emoji || "🐾";
+  function showError() {
+    document.getElementById('state-loading').style.display='none';
+    document.getElementById('state-error').style.display='flex';
   }
-
-  document.getElementById("p-name").textContent = p.name || "Pet sem nome";
-  document.getElementById("p-sub").textContent = (p.species||"") + (p.breed ? " • "+p.breed : "");
-
-  // Sexo
-  if (p.sex) {
-    const sexEl = document.getElementById("p-sex");
-    sexEl.textContent = p.sex === "macho" ? "♂ Macho" : "♀ Fêmea";
-    sexEl.className = "sex-badge " + p.sex;
-    sexEl.style.display = "inline-block";
-  }
-
-  document.getElementById("p-species").textContent = p.species || "—";
-  document.getElementById("p-breed").textContent = p.breed || "—";
-  document.getElementById("p-color").textContent = p.color || "—";
-  document.getElementById("p-age").textContent = p.age || "—";
-  document.getElementById("p-weight").textContent = p.weight ? p.weight + " kg" : "—";
-  document.getElementById("p-birthdate").textContent = p.birthdate ? new Date(p.birthdate).toLocaleDateString("pt-BR") : "—";
-
-  if (p.city) {
-    document.getElementById("p-city").textContent = p.city;
-    document.getElementById("p-city-pill").style.display = "block";
-  }
-  if (p.address) {
-    document.getElementById("p-address").textContent = p.address;
-    document.getElementById("p-address-pill").style.display = "block";
-  }
-
-  // Código da tag
-  if (p.tagcode) {
-    document.getElementById("p-tagcode").textContent = p.tagcode;
-    document.getElementById("p-tagcode-section").style.display = "block";
-  }
-
-  // Vacinas
-  const vaccines = p.vaccines || {};
-  const vacNames = {vacinado:"Vacinado", antirabica:"Antirrábica", vermifugado:"Vermifugado", desparasitado:"Desparasitado", castrado:"Animal Castrado"};
-  const hasAnyVac = Object.keys(vacNames).some(k => vaccines[k] !== undefined);
-  if (hasAnyVac) {
-    const list = document.getElementById("p-vaccines-list");
-    list.innerHTML = Object.entries(vacNames).map(([k, label]) => `
-      <div class="vac-item">
-        <div class="vac-dot ${vaccines[k] ? 'yes' : 'no'}"></div>
-        <span>${label}</span>
-      </div>`).join("");
-    document.getElementById("p-vaccines-section").style.display = "block";
-  }
-
-  // Obs
-  if (p.obs) {
-    document.getElementById("p-obs").textContent = p.obs;
-    document.getElementById("obs-box").style.display = "block";
-  }
-
-  // Contatos
-  const rawPhone = (p.ownerPhone||"").replace(/\D/g,"");
-  document.getElementById("p-owner-name").textContent = p.ownerName || "Dono";
-  document.getElementById("p-owner-name2").textContent = p.ownerName || "Dono";
-  document.getElementById("p-owner-phone").textContent = p.ownerPhone || "—";
-  document.getElementById("btn-call-owner").href = "tel:+55"+rawPhone;
-  document.getElementById("btn-whats-owner").href = "https://wa.me/55"+rawPhone+"?text="+encodeURIComponent("Olá! Encontrei seu pet "+(p.name||"")+" e gostaria de devolvê-lo. 🐾");
-
-  if (p.vetName || p.vetPhone) {
-    const rawVet = (p.vetPhone||"").replace(/\D/g,"");
-    document.getElementById("p-vet-name").textContent = p.vetName || "Veterinário";
-    document.getElementById("p-vet-phone").textContent = p.vetPhone || "—";
-    document.getElementById("btn-call-vet").href = "tel:+55"+rawVet;
-    document.getElementById("vet-section").style.display = "block";
-  }
-
-  // Modo perdido
-  if (p.lost) {
-    const banner = document.getElementById('lost-banner');
-    banner.style.display = 'flex';
-    if (p.lostAt) {
-      const date = new Date(p.lostAt).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      document.getElementById('lost-date').textContent = 'Perdido desde: ' + date;
+  function renderPet(pet) {
+    document.title = '🐾 ' + pet.name + ' — PetNFC';
+    if (pet.photo) {
+      const img = document.getElementById('p-photo');
+      img.src = pet.photo; img.style.display = 'block';
+      document.getElementById('p-emoji-wrap').style.display = 'none';
+    } else { document.getElementById('p-emoji-wrap').textContent = pet.emoji || '🐾'; }
+    document.getElementById('p-name').textContent = pet.name;
+    document.getElementById('p-sub').textContent = [pet.species, pet.breed, pet.age].filter(Boolean).join(' · ') || '—';
+    if (pet.sex) {
+      const sexEl = document.getElementById('p-sex');
+      sexEl.style.display = 'inline-block';
+      sexEl.textContent = pet.sex === 'M' ? '♂ Macho' : '♀ Fêmea';
+      sexEl.className = 'sex-badge ' + (pet.sex === 'M' ? 'macho' : 'femea');
     }
-    document.title = '🔴 PERDIDO - ' + (p.name||'Pet') + ' — PetTag';
-  } else {
-    document.title = (p.name||'Pet') + ' — PetTag 🐾';
+    const infoItems = [pet.species && {lbl:'Espécie',val:pet.species}, pet.breed && {lbl:'Raça',val:pet.breed}, pet.age && {lbl:'Idade',val:pet.age}, pet.color && {lbl:'Cor',val:pet.color}].filter(Boolean);
+    document.getElementById('info-grid').innerHTML = infoItems.map(i => `<div class="info-pill"><div class="lbl">${i.lbl}</div><div class="val">${i.val}</div></div>`).join('');
+    if (pet.vaccines) {
+      const vacs = Object.entries(pet.vaccines);
+      if (vacs.length) {
+        document.getElementById('vaccines-section').style.display = 'block';
+        document.getElementById('vaccines-list').innerHTML = vacs.map(([k,v]) => `<div class="vac-item"><div class="vac-dot ${v?'yes':'no'}"></div>${vaccineNames[k]||k}</div>`).join('');
+      }
+    }
+    if (pet.obs) { document.getElementById('obs-box').style.display = 'block'; document.getElementById('p-obs').textContent = pet.obs; }
+    const phone = (pet.phone||'').replace(/\D/g,'');
+    const whats = (pet.whatsapp||pet.phone||'').replace(/\D/g,'');
+    let contacts = '';
+    if (pet.ownerName && pet.phone) {
+      contacts += `<a class="contact-btn" href="tel:+55${phone}"><div class="contact-icon call">📞</div><div class="contact-info"><div class="name">${pet.ownerName}</div><div class="phone">${pet.phone}</div></div><span class="contact-cta">Ligar</span></a>`;
+      contacts += `<a class="contact-btn" href="https://wa.me/55${whats}?text=${encodeURIComponent('Olá! Encontrei seu pet '+pet.name+' 🐾')}" target="_blank"><div class="contact-icon whats">💬</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">${pet.whatsapp||pet.phone}</div></div><span class="contact-cta">Chamar</span></a>`;
+    }
+    if (pet.vetPhone) {
+      const vp = pet.vetPhone.replace(/\D/g,'');
+      contacts += `<a class="contact-btn" href="tel:+55${vp}"><div class="contact-icon vet">🏥</div><div class="contact-info"><div class="name">${pet.vetName||'Veterinário'}</div><div class="phone">${pet.vetPhone}</div></div><span class="contact-cta">Ligar</span></a>`;
+    }
+    document.getElementById('contact-section').innerHTML = '<h3>Contatos</h3>' + contacts;
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('state-pet').style.display = 'block';
   }
-  document.getElementById("state-loading").style.display = "none";
-  document.getElementById("state-pet").style.display = "block";
-}
-
-load();
+  init();
 </script>
 </body>
 </html>
