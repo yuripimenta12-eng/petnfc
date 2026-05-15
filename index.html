@@ -275,7 +275,7 @@ import { auth, db, onAuthStateChanged, signInWithEmailAndPassword,
 import { collection, deleteDoc, doc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const PUBLIC_BASE = "https://petnfc.vercel.app/pet.html?id=";
+const PUBLIC_BASE = "https://petnfc.vercel.app/pet?id=";
 let currentUser = null, currentPets = [], editingPetId = null;
 let currentEmoji = "🐶", currentQRUrl = "", currentSex = "";
 let currentVaccines = {}, currentPhotoBase64 = "";
