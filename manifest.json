@@ -1,0 +1,26 @@
+{
+  "name": "PetNFC — Tag para Pets",
+  "short_name": "PetNFC",
+  "description": "Tag NFC & QR Code inteligente para identificacao de pets",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F5F0",
+  "theme_color": "#2D6A4F",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "lifestyle"]
+}
