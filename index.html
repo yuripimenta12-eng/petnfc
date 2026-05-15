@@ -4,17 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PetTag — Painel do Dono</title>
-
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#2D6A4F" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PetNFC" />
-
-  <!-- SEO -->
   <meta name="description" content="Painel do dono — gerencie as tags NFC dos seus pets" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -56,11 +50,13 @@
     #pets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
     .pet-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; cursor: pointer; transition: box-shadow .15s, transform .1s; position: relative; }
     .pet-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .pet-card.lost { border-color: var(--danger); background: #FFF5F5; }
     .pet-card-avatar { font-size: 40px; margin-bottom: 10px; }
     .pet-card-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid var(--border); }
     .pet-card-name { font-size: 18px; font-weight: 700; font-family: 'Sora', sans-serif; }
     .pet-card-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
     .pet-card-tag { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #D8F3DC; color: var(--accent); }
+    .pet-card-tag.lost { background: #FDECEA; color: var(--danger); }
     .pet-card-scans { position: absolute; top: 12px; right: 12px; font-size: 11px; font-weight: 700; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; color: var(--muted); }
     .pet-card-scans.has-scans { background: #D8F3DC; border-color: var(--accent2); color: var(--accent); }
     .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -91,13 +87,25 @@
     .photo-preview { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: none; }
     .photo-placeholder { width: 72px; height: 72px; border-radius: 50%; background: var(--bg); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
     .btn-photo { padding: 8px 16px; border: 1.5px solid var(--accent2); border-radius: 8px; background: transparent; color: var(--accent); font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-    .drawer-footer { display: flex; gap: 10px; margin-top: 1.5rem; }
-    .btn-save { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
-    .btn-delete { flex: 1; padding: 12px; background: transparent; border: 1.5px solid var(--danger); color: var(--danger); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    /* LOST TOGGLE */
+    .lost-toggle { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; border: 2px solid var(--border); background: var(--bg); margin-bottom: .5rem; transition: all .2s; }
+    .lost-toggle.active { border-color: var(--danger); background: #FFF5F5; }
+    .lost-toggle-label { display: flex; align-items: center; gap: 10px; }
+    .lost-toggle-label .icon { font-size: 22px; }
+    .lost-toggle-label .txt strong { display: block; font-size: 14px; font-weight: 700; }
+    .lost-toggle-label .txt span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .toggle-switch { width: 48px; height: 26px; background: var(--border); border-radius: 30px; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+    .toggle-switch.on { background: var(--danger); }
+    .toggle-switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left .2s; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .toggle-switch.on::after { left: 25px; }
+    /* Analytics */
     .analytics-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; gap: 1.5rem; margin-bottom: 1rem; }
     .analytics-item { text-align: center; }
     .analytics-item .num { font-size: 24px; font-weight: 800; font-family: 'Sora', sans-serif; color: var(--accent); }
     .analytics-item .lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .drawer-footer { display: flex; gap: 10px; margin-top: 1.5rem; }
+    .btn-save { flex: 2; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; }
+    .btn-delete { flex: 1; padding: 12px; background: transparent; border: 1.5px solid var(--danger); color: var(--danger); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Nunito', sans-serif; }
     #qr-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; padding: 1rem; }
     #qr-modal.open { display: flex; }
     .qr-card { background: var(--surface); border-radius: 20px; padding: 2rem; max-width: 360px; width: 100%; text-align: center; }
@@ -113,11 +121,12 @@
   </style>
 </head>
 <body>
+
 <div id="auth-screen">
   <div class="auth-card">
     <div class="logo">
       <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet" />
-      <p>Tag NFC &amp; QR Code para seu pet</p>
+      <p>Tag NFC & QR Code para seu pet</p>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="authMode('login')">Entrar</button>
@@ -129,23 +138,46 @@
     <p id="auth-error"></p>
   </div>
 </div>
+
 <div id="app-screen">
   <nav class="topbar">
     <div class="topbar-logo"><img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet" /></div>
     <button class="btn-logout" onclick="doLogout()">Sair</button>
   </nav>
   <main class="main">
-    <div class="section-header"><h2>Meus Pets</h2><button class="btn-add" onclick="openDrawer()">+ Adicionar pet</button></div>
-    <div id="pets-grid"><div class="empty-state"><div class="icon">🐾</div><p>Nenhum pet cadastrado ainda.</p></div></div>
+    <div class="section-header">
+      <h2>Meus Pets</h2>
+      <button class="btn-add" onclick="openDrawer()">＋ Adicionar pet</button>
+    </div>
+    <div id="pets-grid"><div class="empty-state"><div class="icon">🐾</div><p>Nenhum pet cadastrado ainda.<br/>Clique em "Adicionar pet" para começar.</p></div></div>
   </main>
 </div>
+
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerOnBg(event)">
   <div class="drawer">
-    <div class="drawer-header"><h2 id="drawer-title">Novo Pet</h2><button class="btn-close" onclick="closeDrawer()">✕</button></div>
+    <div class="drawer-header">
+      <h2 id="drawer-title">Novo Pet</h2>
+      <button class="btn-close" onclick="closeDrawer()">✕</button>
+    </div>
+
     <div class="analytics-box" id="analytics-box" style="display:none">
       <div class="analytics-item"><div class="num" id="analytics-scans">0</div><div class="lbl">Scans</div></div>
       <div class="analytics-item"><div class="num" id="analytics-last">—</div><div class="lbl">Último scan</div></div>
     </div>
+
+    <!-- STATUS PERDIDO -->
+    <div class="form-section-title" id="lost-section" style="display:none">🚨 Status do Pet</div>
+    <div class="lost-toggle" id="lost-toggle" style="display:none" onclick="toggleLost()">
+      <div class="lost-toggle-label">
+        <div class="icon">🚨</div>
+        <div class="txt">
+          <strong id="lost-label">Pet está em casa</strong>
+          <span id="lost-sub">Ative se o pet estiver perdido</span>
+        </div>
+      </div>
+      <div class="toggle-switch" id="lost-switch"></div>
+    </div>
+
     <div class="form-section-title">Ícone</div>
     <div class="emoji-picker" id="emoji-picker">
       <div class="emoji-opt selected" data-emoji="🐶" onclick="selectEmoji(this)">🐶</div>
@@ -157,6 +189,7 @@
       <div class="emoji-opt" data-emoji="🐢" onclick="selectEmoji(this)">🐢</div>
       <div class="emoji-opt" data-emoji="🦜" onclick="selectEmoji(this)">🦜</div>
     </div>
+
     <div class="form-section-title">Foto</div>
     <div class="photo-upload">
       <div class="photo-placeholder" id="photo-placeholder">📷</div>
@@ -167,10 +200,17 @@
         <p style="font-size:12px;color:var(--muted);margin-top:4px">JPG ou PNG, até 2MB</p>
       </div>
     </div>
+
     <div class="form-section-title">Dados do pet</div>
     <div class="field"><label>Nome *</label><input type="text" id="f-name" placeholder="Ex: Thor" /></div>
     <div class="form-row">
-      <div class="field"><label>Espécie</label><select id="f-species"><option>Cachorro</option><option>Gato</option><option>Coelho</option><option>Hamster</option><option>Pássaro</option><option>Peixe</option><option>Réptil</option><option>Outro</option></select></div>
+      <div class="field"><label>Espécie</label>
+        <select id="f-species">
+          <option>Cachorro</option><option>Gato</option><option>Coelho</option>
+          <option>Hamster</option><option>Pássaro</option><option>Peixe</option>
+          <option>Réptil</option><option>Outro</option>
+        </select>
+      </div>
       <div class="field"><label>Raça</label><input type="text" id="f-breed" placeholder="Ex: Labrador" /></div>
     </div>
     <div class="form-row">
@@ -183,24 +223,29 @@
         <button class="sex-btn" id="btn-female" onclick="setSex('F')">♀ Fêmea</button>
       </div>
     </div>
-    <div class="field"><label>Observações</label><textarea id="f-obs" placeholder="Ex: Tem medo de trovão..."></textarea></div>
+    <div class="field"><label>Observações / Condições especiais</label>
+      <textarea id="f-obs" placeholder="Ex: Tem medo de trovão, toma remédio..."></textarea>
+    </div>
+
     <div class="form-section-title">Vacinas</div>
     <div class="vaccines-grid">
       <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="raiva"><div class="vaccine-dot"></div><span class="vaccine-label">Raiva</span></div>
       <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="v8v10"><div class="vaccine-dot"></div><span class="vaccine-label">V8/V10</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="gripe"><div class="vaccine-dot"></div><span class="vaccine-label">Gripe</span></div>
+      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="gripe"><div class="vaccine-dot"></div><span class="vaccine-label">Gripe (Bordetella)</span></div>
       <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="giardia"><div class="vaccine-dot"></div><span class="vaccine-label">Giardia</span></div>
       <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="leptospirose"><div class="vaccine-dot"></div><span class="vaccine-label">Leptospirose</span></div>
       <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="leishmaniose"><div class="vaccine-dot"></div><span class="vaccine-label">Leishmaniose</span></div>
     </div>
+
     <div class="form-section-title">Contatos do dono</div>
     <div class="form-row">
       <div class="field"><label>Nome do dono *</label><input type="text" id="f-owner" placeholder="Seu nome" /></div>
       <div class="field"><label>Telefone *</label><input type="tel" id="f-phone" placeholder="(11) 99999-9999" /></div>
     </div>
-    <div class="field"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(11) 99999-9999" /></div>
-    <div class="field"><label>Veterinário</label><input type="tel" id="f-vet" placeholder="(11) 3333-3333" /></div>
-    <div class="field"><label>Nome da clínica</label><input type="text" id="f-vet-name" placeholder="Dr. Fulano / Clínica PetVida" /></div>
+    <div class="field"><label>WhatsApp (se diferente)</label><input type="tel" id="f-whatsapp" placeholder="(11) 99999-9999" /></div>
+    <div class="field"><label>Contato do veterinário</label><input type="tel" id="f-vet" placeholder="(11) 3333-3333" /></div>
+    <div class="field"><label>Nome do veterinário / clínica</label><input type="text" id="f-vet-name" placeholder="Dr. Fulano / Clínica PetVida" /></div>
+
     <div class="drawer-footer">
       <button class="btn-save" onclick="savePetForm()">💾 Salvar</button>
       <button class="btn-delete" id="btn-delete" onclick="deletePetForm()" style="display:none">Excluir</button>
@@ -208,6 +253,7 @@
     </div>
   </div>
 </div>
+
 <div id="qr-modal">
   <div class="qr-card">
     <h3 id="qr-pet-name">QR Code do pet</h3>
@@ -220,31 +266,204 @@
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script type="module">
-  import { auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, savePet, getUserPets, deletePet, incrementScan } from './firebase.js';
-  let currentUser=null,pets=[],editingPetId=null,selectedSex=null,selectedEmoji='🐶',photoBase64=null;
-  window.authMode=(mode)=>{document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');document.getElementById('auth-btn').textContent=mode==='login'?'Entrar':'Criar conta';document.getElementById('auth-error').textContent='';window._authMode=mode;};
-  window._authMode='login';
-  window.doAuth=async()=>{const email=document.getElementById('auth-email').value.trim(),pass=document.getElementById('auth-pass').value,errEl=document.getElementById('auth-error');errEl.textContent='';if(!email||!pass){errEl.textContent='Preencha e-mail e senha.';return;}try{if(window._authMode==='login'){await signInWithEmailAndPassword(auth,email,pass);}else{await createUserWithEmailAndPassword(auth,email,pass);}}catch(err){const msgs={'auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'E-mail já cadastrado.','auth/weak-password':'Senha fraca (mínimo 6 caracteres).','auth/invalid-email':'E-mail inválido.','auth/invalid-credential':'E-mail ou senha incorretos.'};errEl.textContent=msgs[err.code]||'Erro: '+err.message;}};
-  window.doLogout=async()=>{try{await signOut(auth);}catch(e){console.error(e);}};
-  onAuthStateChanged(auth,async(user)=>{currentUser=user;if(user){document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').style.display='block';await loadPets();}else{document.getElementById('auth-screen').style.display='flex';document.getElementById('app-screen').style.display='none';}});
-  async function loadPets(){try{pets=await getUserPets(currentUser.uid);renderPets();}catch(err){showToast('Erro ao carregar pets: '+err.message);}}
-  function renderPets(){const grid=document.getElementById('pets-grid');if(!pets.length){grid.innerHTML='<div class="empty-state"><div class="icon">🐾</div><p>Nenhum pet cadastrado.</p></div>';return;}grid.innerHTML=pets.map(p=>{const scans=p.scanCount||0;const badge=`<span class="pet-card-scans ${scans>0?'has-scans':''}}">👁 ${scans} scan${scans!==1?'s':''}</span>`;const avatar=p.photo?`<img class="pet-card-photo" src="${p.photo}" alt="${p.name}" />`:`<div class="pet-card-avatar">${p.emoji||'🐾'}</div>`;return`<div class="pet-card" onclick="openDrawer('${p.id}')">${badge}${avatar}<div class="pet-card-name">${p.name}</div><div class="pet-card-sub">${p.species||''} ${p.breed?'· '+p.breed:''}</div><span class="pet-card-tag">🏷 Tag ativa</span></div>`;}).join('');}
-  window.openDrawer=(petId=null)=>{editingPetId=petId;resetForm();const pet=petId?pets.find(p=>p.id===petId):null;document.getElementById('drawer-title').textContent=pet?`Editar: ${pet.name}`:'Novo Pet';document.getElementById('btn-delete').style.display=pet?'block':'none';document.getElementById('btn-qr').style.display=pet?'block':'none';if(pet){document.getElementById('analytics-box').style.display='flex';document.getElementById('analytics-scans').textContent=pet.scanCount||0;document.getElementById('analytics-last').textContent=pet.lastScannedAt?new Date(pet.lastScannedAt).toLocaleDateString('pt-BR'):'—';document.getElementById('f-name').value=pet.name||'';document.getElementById('f-species').value=pet.species||'Cachorro';document.getElementById('f-breed').value=pet.breed||'';document.getElementById('f-age').value=pet.age||'';document.getElementById('f-color').value=pet.color||'';document.getElementById('f-obs').value=pet.obs||'';document.getElementById('f-owner').value=pet.ownerName||'';document.getElementById('f-phone').value=pet.phone||'';document.getElementById('f-whatsapp').value=pet.whatsapp||'';document.getElementById('f-vet').value=pet.vetPhone||'';document.getElementById('f-vet-name').value=pet.vetName||'';if(pet.sex)setSex(pet.sex);if(pet.emoji)selectEmojiByValue(pet.emoji);if(pet.photo){photoBase64=pet.photo;document.getElementById('photo-preview').src=pet.photo;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';}document.querySelectorAll('.vaccine-item').forEach(el=>{if(pet.vaccines&&pet.vaccines[el.dataset.v])el.classList.add('checked');});}else{document.getElementById('analytics-box').style.display='none';}document.getElementById('drawer-overlay').classList.add('open');};
-  window.closeDrawer=()=>document.getElementById('drawer-overlay').classList.remove('open');
-  window.closeDrawerOnBg=(e)=>{if(e.target===document.getElementById('drawer-overlay'))closeDrawer();};
-  function resetForm(){['f-name','f-breed','f-age','f-color','f-obs','f-owner','f-phone','f-whatsapp','f-vet','f-vet-name'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('f-species').value='Cachorro';selectedSex=null;selectedEmoji='🐶';photoBase64=null;document.getElementById('photo-preview').style.display='none';document.getElementById('photo-placeholder').style.display='flex';document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected'));document.querySelector('.emoji-opt[data-emoji="🐶"]').classList.add('selected');document.querySelectorAll('.sex-btn').forEach(b=>b.className='sex-btn');document.querySelectorAll('.vaccine-item').forEach(el=>el.classList.remove('checked'));}
-  window.selectEmoji=(el)=>{document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');selectedEmoji=el.dataset.emoji;};
-  function selectEmojiByValue(emoji){document.querySelectorAll('.emoji-opt').forEach(e=>{e.classList.remove('selected');if(e.dataset.emoji===emoji){e.classList.add('selected');selectedEmoji=emoji;}});}
-  window.setSex=(sex)=>{selectedSex=sex;document.getElementById('btn-male').className='sex-btn'+(sex==='M'?' active-male':'');document.getElementById('btn-female').className='sex-btn'+(sex==='F'?' active-female':'');};
-  window.toggleVaccine=(el)=>el.classList.toggle('checked');
-  window.handlePhoto=(input)=>{const file=input.files[0];if(!file)return;if(file.size>2*1024*1024){showToast('Foto muito grande. Máximo 2MB.');return;}const reader=new FileReader();reader.onload=(e)=>{photoBase64=e.target.result;document.getElementById('photo-preview').src=photoBase64;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';};reader.readAsDataURL(file);};
-  window.savePetForm=async()=>{const name=document.getElementById('f-name').value.trim(),ownerName=document.getElementById('f-owner').value.trim(),phone=document.getElementById('f-phone').value.trim();if(!name){showToast('Informe o nome do pet.');return;}if(!ownerName||!phone){showToast('Informe nome e telefone do dono.');return;}const vaccines={};document.querySelectorAll('.vaccine-item').forEach(el=>{vaccines[el.dataset.v]=el.classList.contains('checked');});const petData={name,ownerName,phone,species:document.getElementById('f-species').value,breed:document.getElementById('f-breed').value.trim(),age:document.getElementById('f-age').value.trim(),color:document.getElementById('f-color').value.trim(),obs:document.getElementById('f-obs').value.trim(),whatsapp:document.getElementById('f-whatsapp').value.trim(),vetPhone:document.getElementById('f-vet').value.trim(),vetName:document.getElementById('f-vet-name').value.trim(),sex:selectedSex,emoji:selectedEmoji,photo:photoBase64||null,vaccines,updatedAt:new Date().toISOString()};try{const btn=document.querySelector('.btn-save');btn.textContent='Salvando...';btn.disabled=true;await savePet(currentUser.uid,petData,editingPetId);await loadPets();closeDrawer();showToast('✅ Pet salvo com sucesso!');}catch(err){showToast('Erro ao salvar: '+err.message);}finally{const btn=document.querySelector('.btn-save');btn.textContent='💾 Salvar';btn.disabled=false;}};
-  window.deletePetForm=async()=>{if(!editingPetId)return;if(!confirm('Excluir este pet? Não pode ser desfeito.'))return;try{await deletePet(currentUser.uid,editingPetId);await loadPets();closeDrawer();showToast('Pet excluído.');}catch(err){showToast('Erro ao excluir: '+err.message);}};
-  window.showQR=()=>{if(!editingPetId)return;const slug=`${currentUser.uid}_${editingPetId}`;const url=`${location.origin}/pet/${slug}`;const pet=pets.find(p=>p.id===editingPetId);document.getElementById('qr-pet-name').textContent=`QR Code — ${pet?.name||'Pet'}`;document.getElementById('qr-url-text').textContent=url;const container=document.getElementById('qr-container');container.innerHTML='';new QRCode(container,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});document.getElementById('qr-modal').classList.add('open');};
-  window.downloadQR=()=>{const canvas=document.querySelector('#qr-container canvas');if(!canvas)return;const link=document.createElement('a');link.download='petnfc-qrcode.png';link.href=canvas.toDataURL();link.click();};
-  window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);};
+  import { auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, savePet, getUserPets, deletePet, incrementScan } from './firebase.js';
+
+  let currentUser=null, pets=[], editingPetId=null, selectedSex=null, selectedEmoji='🐶', photoBase64=null, isLost=false;
+
+  window.authMode = (mode) => {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('auth-btn').textContent = mode==='login' ? 'Entrar' : 'Criar conta';
+    document.getElementById('auth-error').textContent = '';
+    window._authMode = mode;
+  };
+  window._authMode = 'login';
+
+  window.doAuth = async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass  = document.getElementById('auth-pass').value;
+    const errEl = document.getElementById('auth-error');
+    errEl.textContent = '';
+    if (!email || !pass) { errEl.textContent = 'Preencha e-mail e senha.'; return; }
+    try {
+      if (window._authMode === 'login') await signInWithEmailAndPassword(auth, email, pass);
+      else await createUserWithEmailAndPassword(auth, email, pass);
+    } catch(err) {
+      const msgs = { 'auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'E-mail já cadastrado.','auth/weak-password':'Senha fraca (mínimo 6 caracteres).','auth/invalid-email':'E-mail inválido.','auth/invalid-credential':'E-mail ou senha incorretos.' };
+      errEl.textContent = msgs[err.code] || 'Erro: ' + err.message;
+    }
+  };
+
+  window.doLogout = async () => { try { await signOut(auth); } catch(e) { console.error(e); } };
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      await loadPets();
+    } else {
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+    }
+  });
+
+  async function loadPets() {
+    try { pets = await getUserPets(currentUser.uid); renderPets(); }
+    catch(err) { showToast('Erro ao carregar pets: ' + err.message); }
+  }
+
+  function renderPets() {
+    const grid = document.getElementById('pets-grid');
+    if (!pets.length) {
+      grid.innerHTML = '<div class="empty-state"><div class="icon">🐾</div><p>Nenhum pet cadastrado ainda.<br/>Clique em "Adicionar pet" para começar.</p></div>';
+      return;
+    }
+    grid.innerHTML = pets.map(p => {
+      const scans = p.scanCount || 0;
+      const badge = `<span class="pet-card-scans ${scans>0?'has-scans':''}">👁 ${scans} scan${scans!==1?'s':''}</span>`;
+      const avatar = p.photo ? `<img class="pet-card-photo" src="${p.photo}" alt="${p.name}" />` : `<div class="pet-card-avatar">${p.emoji||'🐾'}</div>`;
+      const lostTag = p.lost ? '<span class="pet-card-tag lost">🚨 PERDIDO</span>' : '<span class="pet-card-tag">🏷 Tag ativa</span>';
+      return `<div class="pet-card${p.lost?' lost':''}" onclick="openDrawer('${p.id}')">${badge}${avatar}<div class="pet-card-name">${p.name}</div><div class="pet-card-sub">${p.species||''} ${p.breed?'· '+p.breed:''}</div>${lostTag}</div>`;
+    }).join('');
+  }
+
+  window.openDrawer = (petId=null) => {
+    editingPetId = petId;
+    resetForm();
+    const pet = petId ? pets.find(p => p.id === petId) : null;
+    document.getElementById('drawer-title').textContent = pet ? `Editar: ${pet.name}` : 'Novo Pet';
+    document.getElementById('btn-delete').style.display = pet ? 'block' : 'none';
+    document.getElementById('btn-qr').style.display = pet ? 'block' : 'none';
+    document.getElementById('lost-section').style.display = pet ? 'block' : 'none';
+    document.getElementById('lost-toggle').style.display = pet ? 'flex' : 'none';
+
+    if (pet) {
+      document.getElementById('analytics-box').style.display = 'flex';
+      document.getElementById('analytics-scans').textContent = pet.scanCount || 0;
+      document.getElementById('analytics-last').textContent = pet.lastScannedAt ? new Date(pet.lastScannedAt).toLocaleDateString('pt-BR') : '—';
+      document.getElementById('f-name').value = pet.name || '';
+      document.getElementById('f-species').value = pet.species || 'Cachorro';
+      document.getElementById('f-breed').value = pet.breed || '';
+      document.getElementById('f-age').value = pet.age || '';
+      document.getElementById('f-color').value = pet.color || '';
+      document.getElementById('f-obs').value = pet.obs || '';
+      document.getElementById('f-owner').value = pet.ownerName || '';
+      document.getElementById('f-phone').value = pet.phone || '';
+      document.getElementById('f-whatsapp').value = pet.whatsapp || '';
+      document.getElementById('f-vet').value = pet.vetPhone || '';
+      document.getElementById('f-vet-name').value = pet.vetName || '';
+      if (pet.sex) setSex(pet.sex);
+      if (pet.emoji) selectEmojiByValue(pet.emoji);
+      if (pet.photo) { photoBase64=pet.photo; document.getElementById('photo-preview').src=pet.photo; document.getElementById('photo-preview').style.display='block'; document.getElementById('photo-placeholder').style.display='none'; }
+      document.querySelectorAll('.vaccine-item').forEach(el => { if (pet.vaccines && pet.vaccines[el.dataset.v]) el.classList.add('checked'); });
+      isLost = !!pet.lost;
+      updateLostUI();
+    } else {
+      document.getElementById('analytics-box').style.display = 'none';
+    }
+    document.getElementById('drawer-overlay').classList.add('open');
+  };
+
+  window.closeDrawer = () => document.getElementById('drawer-overlay').classList.remove('open');
+  window.closeDrawerOnBg = (e) => { if (e.target===document.getElementById('drawer-overlay')) closeDrawer(); };
+
+  window.toggleLost = () => {
+    isLost = !isLost;
+    updateLostUI();
+  };
+
+  function updateLostUI() {
+    const sw = document.getElementById('lost-switch');
+    const lbl = document.getElementById('lost-label');
+    const sub = document.getElementById('lost-sub');
+    const tgl = document.getElementById('lost-toggle');
+    if (isLost) {
+      sw.classList.add('on'); tgl.classList.add('active');
+      lbl.textContent = '🚨 Pet PERDIDO!';
+      sub.textContent = 'A tag mostrará alerta vermelho de perdido';
+    } else {
+      sw.classList.remove('on'); tgl.classList.remove('active');
+      lbl.textContent = 'Pet está em casa';
+      sub.textContent = 'Ative se o pet estiver perdido';
+    }
+  }
+
+  function resetForm() {
+    ['f-name','f-breed','f-age','f-color','f-obs','f-owner','f-phone','f-whatsapp','f-vet','f-vet-name'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('f-species').value = 'Cachorro';
+    selectedSex=null; selectedEmoji='🐶'; photoBase64=null; isLost=false;
+    document.getElementById('photo-preview').style.display='none';
+    document.getElementById('photo-placeholder').style.display='flex';
+    document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected'));
+    document.querySelector('.emoji-opt[data-emoji="🐶"]').classList.add('selected');
+    document.querySelectorAll('.sex-btn').forEach(b=>b.className='sex-btn');
+    document.querySelectorAll('.vaccine-item').forEach(el=>el.classList.remove('checked'));
+    updateLostUI();
+  }
+
+  window.selectEmoji = (el) => { document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); selectedEmoji=el.dataset.emoji; };
+  function selectEmojiByValue(emoji) { document.querySelectorAll('.emoji-opt').forEach(e=>{e.classList.remove('selected');if(e.dataset.emoji===emoji){e.classList.add('selected');selectedEmoji=emoji;}}); }
+  window.setSex = (sex) => { selectedSex=sex; document.getElementById('btn-male').className='sex-btn'+(sex==='M'?' active-male':''); document.getElementById('btn-female').className='sex-btn'+(sex==='F'?' active-female':''); };
+  window.toggleVaccine = (el) => el.classList.toggle('checked');
+  window.handlePhoto = (input) => {
+    const file = input.files[0]; if (!file) return;
+    if (file.size>2*1024*1024){showToast('Foto muito grande. Máximo 2MB.');return;}
+    const reader=new FileReader();
+    reader.onload=(e)=>{photoBase64=e.target.result;document.getElementById('photo-preview').src=photoBase64;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';};
+    reader.readAsDataURL(file);
+  };
+
+  window.savePetForm = async () => {
+    const name=document.getElementById('f-name').value.trim();
+    const ownerName=document.getElementById('f-owner').value.trim();
+    const phone=document.getElementById('f-phone').value.trim();
+    if (!name){showToast('Informe o nome do pet.');return;}
+    if (!ownerName||!phone){showToast('Informe nome e telefone do dono.');return;}
+    const vaccines={};
+    document.querySelectorAll('.vaccine-item').forEach(el=>{vaccines[el.dataset.v]=el.classList.contains('checked');});
+    const petData={name,ownerName,phone,species:document.getElementById('f-species').value,breed:document.getElementById('f-breed').value.trim(),age:document.getElementById('f-age').value.trim(),color:document.getElementById('f-color').value.trim(),obs:document.getElementById('f-obs').value.trim(),whatsapp:document.getElementById('f-whatsapp').value.trim(),vetPhone:document.getElementById('f-vet').value.trim(),vetName:document.getElementById('f-vet-name').value.trim(),sex:selectedSex,emoji:selectedEmoji,photo:photoBase64||null,vaccines,lost:isLost,updatedAt:new Date().toISOString()};
+    try {
+      const btn=document.querySelector('.btn-save'); btn.textContent='Salvando...'; btn.disabled=true;
+      await savePet(currentUser.uid,petData,editingPetId);
+      await loadPets(); closeDrawer();
+      showToast(isLost ? '🚨 Pet marcado como PERDIDO!' : '✅ Pet salvo com sucesso!');
+    } catch(err) { showToast('Erro ao salvar: '+err.message); }
+    finally { const btn=document.querySelector('.btn-save'); btn.textContent='💾 Salvar'; btn.disabled=false; }
+  };
+
+  window.deletePetForm = async () => {
+    if (!editingPetId) return;
+    if (!confirm('Excluir este pet? Não pode ser desfeito.')) return;
+    try { await deletePet(currentUser.uid,editingPetId); await loadPets(); closeDrawer(); showToast('Pet excluído.'); }
+    catch(err) { showToast('Erro ao excluir: '+err.message); }
+  };
+
+  window.showQR = () => {
+    if (!editingPetId) return;
+    const slug=`${currentUser.uid}_${editingPetId}`;
+    const url=`${location.origin}/pet/${slug}`;
+    const pet=pets.find(p=>p.id===editingPetId);
+    document.getElementById('qr-pet-name').textContent=`QR Code — ${pet?.name||'Pet'}`;
+    document.getElementById('qr-url-text').textContent=url;
+    const container=document.getElementById('qr-container'); container.innerHTML='';
+    new QRCode(container,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
+    document.getElementById('qr-modal').classList.add('open');
+  };
+
+  window.downloadQR = () => {
+    const canvas=document.querySelector('#qr-container canvas'); if (!canvas) return;
+    const link=document.createElement('a'); link.download='petnfc-qrcode.png'; link.href=canvas.toDataURL(); link.click();
+  };
+
+  window.showToast = (msg) => {
+    const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),3000);
+  };
 </script>
 </body>
 </html>
