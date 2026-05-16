@@ -114,7 +114,18 @@ const EJS_KEY = 'wMKdLso1I33GtEACr';
 const EJS_SVC = 'service_9m9t14l';
 const EJS_TPL = 'template_s8de3rq';
 
-const vNames = { castrado:'Castrado', raiva:'Raiva', gripe:'Gripe', giardia:'Giardia', v3v4v5:'V3/V4/V5', v8v10:'V8/V10', leishmaniose:'Leishmaniose', desparasitado:'Desparasitado', vermifugado:'Vermifugado' };
+// Lista OFICIAL de vacinas — somente essas 9, nessa ordem
+const VACINAS = [
+  { key: 'castrado',     label: 'Castrado'     },
+  { key: 'raiva',        label: 'Raiva'         },
+  { key: 'gripe',        label: 'Gripe'         },
+  { key: 'giardia',      label: 'Giardia'       },
+  { key: 'v3v4v5',       label: 'V3/V4/V5'      },
+  { key: 'v8v10',        label: 'V8/V10'        },
+  { key: 'leishmaniose', label: 'Leishmaniose'  },
+  { key: 'desparasitado',label: 'Desparasitado' },
+  { key: 'vermifugado',  label: 'Vermifugado'   }
+];
 
 async function sendEmail(pet) {
   try {
@@ -165,19 +176,22 @@ function renderPet(pet) {
     : '<div class="found-banner"><div class="icon">&#x1F514;</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
   var info = [
     pet.species && { l:'Especie', v:pet.species },
-    pet.breed && { l:'Raca', v:pet.breed },
-    pet.age && { l:'Idade', v:pet.age },
-    pet.color && { l:'Cor', v:pet.color }
+    pet.breed   && { l:'Raca',    v:pet.breed   },
+    pet.age     && { l:'Idade',   v:pet.age     },
+    pet.color   && { l:'Cor',     v:pet.color   }
   ].filter(Boolean);
   document.getElementById('info-grid').innerHTML = info.map(function(i) {
     return '<div class="info-pill"><div class="lbl">' + i.l + '</div><div class="val">' + i.v + '</div></div>';
   }).join('');
-  if (pet.vaccines && Object.keys(pet.vaccines).length) {
-    document.getElementById('vaccines-section').style.display = 'block';
-    document.getElementById('vaccines-list').innerHTML = Object.entries(pet.vaccines).map(function(e) {
-      return '<div class="vac-item"><div class="vac-dot ' + (e[1] ? 'yes' : 'no') + '"></div>' + (vNames[e[0]] || e[0]) + '</div>';
-    }).join('');
-  }
+
+  // Mostrar APENAS as 9 vacinas oficiais, na ordem correta, ignorar qualquer outra
+  var vacsHtml = VACINAS.map(function(v) {
+    var marcada = pet.vaccines && pet.vaccines[v.key] === true;
+    return '<div class="vac-item"><div class="vac-dot ' + (marcada ? 'yes' : 'no') + '"></div>' + v.label + '</div>';
+  }).join('');
+  document.getElementById('vaccines-section').style.display = 'block';
+  document.getElementById('vaccines-list').innerHTML = vacsHtml;
+
   if (pet.obs) {
     document.getElementById('obs-box').style.display = 'block';
     document.getElementById('p-obs').textContent = pet.obs;
@@ -187,15 +201,15 @@ function renderPet(pet) {
     document.getElementById('address-box').style.display = 'flex';
     document.getElementById('p-address').textContent = addr.join(', ');
   }
-  var phone = (pet.phone || '').replace(/D/g, '');
-  var whats = (pet.whatsapp || pet.phone || '').replace(/D/g, '');
+  var phone = (pet.phone || '').replace(/\D/g, '');
+  var whats = (pet.whatsapp || pet.phone || '').replace(/\D/g, '');
   var c = '';
   if (pet.ownerName && pet.phone) {
     c += '<a class="contact-btn" href="tel:+55' + phone + '"><div class="contact-icon call">&#x1F4DE;</div><div class="contact-info"><div class="name">' + pet.ownerName + '</div><div class="phone">' + pet.phone + '</div></div><span class="contact-cta">Ligar</span></a>';
     c += '<a class="contact-btn" href="https://wa.me/55' + whats + '?text=' + encodeURIComponent('Ola! Encontrei seu pet ' + pet.name) + '" target="_blank"><div class="contact-icon whats">&#x1F4AC;</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">' + (pet.whatsapp || pet.phone) + '</div></div><span class="contact-cta">Chamar</span></a>';
   }
   if (pet.vetPhone) {
-    var vp = pet.vetPhone.replace(/D/g, '');
+    var vp = pet.vetPhone.replace(/\D/g, '');
     c += '<a class="contact-btn" href="tel:+55' + vp + '"><div class="contact-icon vet">&#x1F3E5;</div><div class="contact-info"><div class="name">' + (pet.vetName || 'Veterinario') + '</div><div class="phone">' + pet.vetPhone + '</div></div><span class="contact-cta">Ligar</span></a>';
   }
   document.getElementById('contact-section').innerHTML = '<h3>Contatos</h3>' + c;
