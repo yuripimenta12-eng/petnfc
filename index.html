@@ -14,231 +14,236 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#FFF4E0;--surface:#fff;--border:#F0D9B5;--text:#000;--muted:#414141;--accent:#FF8320;--adark:#E06E10;--teal:#00C7B2;--danger:#C1343A;--r:14px;--sh:0 2px 16px rgba(255,131,32,.10)}
-    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    :root{--bg:#FFF4E0;--sf:#fff;--bd:#F0D9B5;--tx:#000;--mu:#414141;--ac:#FF8320;--ad:#E06E10;--tl:#00C7B2;--dg:#C1343A;--r:14px;--sh:0 2px 16px rgba(255,131,32,.10)}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
     h1,h2,h3{font-family:'Sora',sans-serif}
-    #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
-    .auth-card{background:var(--surface);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--sh);border:1.5px solid var(--border)}
+    #auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .acard{background:var(--sf);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--sh);border:1.5px solid var(--bd)}
     .logo{text-align:center;margin-bottom:2rem}
     .logo img{height:70px;object-fit:contain}
-    .logo p{font-size:14px;color:var(--muted);margin-top:4px}
-    .auth-tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:1.5rem}
-    .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif}
-    .auth-tab.active{background:var(--accent);color:#fff}
-    .field{margin-bottom:1rem}
-    .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
-    .field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text)}
-    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
-    .field textarea{resize:none;min-height:80px}
-    .btn-full{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .btn-full:hover{background:var(--adark)}
-    #auth-error{font-size:13px;text-align:center;margin-top:8px;min-height:18px;color:var(--danger)}
-    .forgot-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--accent);font-weight:600;cursor:pointer}
-    #app-screen{display:none}
-    .topbar{background:var(--accent);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
-    .topbar-logo img{height:38px;object-fit:contain;filter:brightness(0) invert(1)}
-    .btn-logout{padding:6px 16px;border:2px solid rgba(255,255,255,.6);border-radius:8px;background:transparent;font-size:13px;font-weight:700;cursor:pointer;color:#fff;font-family:'Nunito',sans-serif}
+    .logo p{font-size:14px;color:var(--mu);margin-top:4px}
+    .atabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:1.5rem}
+    .atab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:var(--mu);font-family:'Nunito',sans-serif}
+    .atab.on{background:var(--ac);color:#fff}
+    .fi{margin-bottom:1rem}
+    .fi label{display:block;font-size:13px;font-weight:700;color:var(--mu);margin-bottom:6px}
+    .fi input,.fi select,.fi textarea{width:100%;padding:10px 14px;border:1.5px solid var(--bd);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx)}
+    .fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--ac)}
+    .fi textarea{resize:none;min-height:80px}
+    .bfull{width:100%;padding:13px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .bfull:hover{background:var(--ad)}
+    #aerr{font-size:13px;text-align:center;margin-top:8px;min-height:18px;color:var(--dg)}
+    .forgot{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--ac);font-weight:600;cursor:pointer}
+    #app{display:none}
+    .topbar{background:var(--ac);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+    .topbar img{height:38px;object-fit:contain;filter:brightness(0) invert(1)}
+    .blog{padding:6px 16px;border:2px solid rgba(255,255,255,.6);border-radius:8px;background:transparent;font-size:13px;font-weight:700;cursor:pointer;color:#fff;font-family:'Nunito',sans-serif}
     .main{max-width:900px;margin:0 auto;padding:2rem 1rem}
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
-    .section-header h2{font-size:20px}
-    .btn-add{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    #pets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
-    .pet-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:box-shadow .15s,transform .1s;position:relative}
-    .pet-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
-    .pet-card.lost{border-color:var(--danger);background:#FFF5F5}
-    .pet-card-avatar{font-size:40px;margin-bottom:10px}
-    .pet-card-photo{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:2px solid var(--border)}
-    .pet-card-name{font-size:18px;font-weight:700;font-family:'Sora',sans-serif}
-    .pet-card-sub{font-size:13px;color:var(--muted);margin-top:2px}
-    .pet-card-tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,131,32,.12);color:var(--accent)}
-    .pet-card-tag.lost{background:#FDECEA;color:var(--danger)}
-    .pet-card-scans{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 8px;color:var(--muted)}
-    .pet-card-scans.has-scans{background:rgba(0,199,178,.12);border-color:var(--teal);color:#00A898}
-    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
-    .empty-state .icon{font-size:56px;margin-bottom:1rem}
-    .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
-    .drawer-overlay.open{display:flex}
-    .drawer{background:var(--surface);border-radius:20px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:2rem}
-    .drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
-    .drawer-header h2{font-size:20px}
-    .btn-close{width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;font-size:18px;cursor:pointer}
-    .fsec{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem;border-bottom:2px solid rgba(255,131,32,.2);padding-bottom:6px}
-    .emoji-picker{display:flex;gap:8px;flex-wrap:wrap}
-    .emoji-opt{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:2.5px solid transparent;background:var(--bg)}
-    .emoji-opt.selected{border-color:var(--accent);background:rgba(255,131,32,.1)}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .sex-toggle{display:flex;gap:10px}
-    .sex-btn{flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .sex-btn.am{border-color:#4A90D9;background:#EBF4FF;color:#4A90D9}
-    .sex-btn.af{border-color:#E87C9A;background:#FFF0F5;color:#E87C9A}
-    .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .vi{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg)}
-    .vi.checked{border-color:var(--accent);background:rgba(255,131,32,.08)}
-    .vdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
-    .vi.checked .vdot{background:var(--accent);border-color:var(--accent)}
-    .vlab{font-size:13px;font-weight:600}
-    .photo-upload{display:flex;align-items:center;gap:12px}
-    .photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:none}
-    .photo-ph{width:72px;height:72px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
-    .btn-photo{padding:8px 16px;border:2px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .lt{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;border:2px solid var(--border);background:var(--bg);margin-bottom:.5rem;cursor:pointer}
-    .lt.active{border-color:var(--danger);background:#FFF5F5}
-    .lt-label{display:flex;align-items:center;gap:10px}
-    .lt-label .icon{font-size:22px}
-    .lt-label .txt strong{display:block;font-size:14px;font-weight:700}
-    .lt-label .txt span{display:block;font-size:12px;color:var(--muted)}
-    .tswitch{width:48px;height:26px;background:var(--border);border-radius:30px;position:relative;flex-shrink:0}
-    .tswitch.on{background:var(--danger)}
-    .tswitch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
-    .tswitch.on::after{left:25px}
-    .abox{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:1.5rem;margin-bottom:1rem}
-    .aitem .num{font-size:24px;font-weight:800;font-family:'Sora',sans-serif;color:var(--accent)}
-    .aitem .lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase}
-    .dfooter{display:flex;gap:10px;margin-top:1.5rem}
-    .btn-save{flex:2;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .btn-save:hover{background:var(--adark)}
-    .btn-del{flex:1;padding:13px;background:transparent;border:2px solid var(--danger);color:var(--danger);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .btn-qrt{padding:13px 16px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .sh h2{font-size:20px}
+    .badd{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+    .card{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:box-shadow .15s,transform .1s;position:relative}
+    .card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+    .card.lost{border-color:var(--dg);background:#FFF5F5}
+    .cavt{font-size:40px;margin-bottom:10px}
+    .cphoto{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:2px solid var(--bd)}
+    .cname{font-size:18px;font-weight:700;font-family:'Sora',sans-serif}
+    .csub{font-size:13px;color:var(--mu);margin-top:2px}
+    .ctag{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,131,32,.12);color:var(--ac)}
+    .ctag.lost{background:#FDECEA;color:var(--dg)}
+    .csc{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:2px 8px;color:var(--mu)}
+    .csc.hs{background:rgba(0,199,178,.12);border-color:var(--tl);color:#00A898}
+    .empty{text-align:center;padding:4rem 2rem;color:var(--mu)}
+    .empty .ic{font-size:56px;margin-bottom:1rem}
+    .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+    .ov.on{display:flex}
+    .drawer{background:var(--sf);border-radius:20px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:2rem}
+    .dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .dh h2{font-size:20px}
+    .bcl{width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;font-size:18px;cursor:pointer}
+    .fsec{font-size:11px;font-weight:800;color:var(--ac);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem;border-bottom:2px solid rgba(255,131,32,.2);padding-bottom:6px}
+    .epick{display:flex;gap:8px;flex-wrap:wrap}
+    .eopt{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:2.5px solid transparent;background:var(--bg)}
+    .eopt.on{border-color:var(--ac);background:rgba(255,131,32,.1)}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .stog{display:flex;gap:10px}
+    .sbtn{flex:1;padding:10px;border:2px solid var(--bd);border-radius:10px;background:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .sbtn.am{border-color:#4A90D9;background:#EBF4FF;color:#4A90D9}
+    .sbtn.af{border-color:#E87C9A;background:#FFF0F5;color:#E87C9A}
+    .vg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .vi{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--bd);border-radius:10px;cursor:pointer;background:var(--bg)}
+    .vi.on{border-color:var(--ac);background:rgba(255,131,32,.08)}
+    .vd{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);flex-shrink:0}
+    .vi.on .vd{background:var(--ac);border-color:var(--ac)}
+    .vl{font-size:13px;font-weight:600}
+    .pup{display:flex;align-items:center;gap:12px}
+    .pprv{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--bd);display:none}
+    .pph{width:72px;height:72px;border-radius:50%;background:var(--bg);border:2px dashed var(--bd);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .bph{padding:8px 16px;border:2px solid var(--ac);border-radius:8px;background:transparent;color:var(--ac);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .lt{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);margin-bottom:.5rem;cursor:pointer}
+    .lt.on{border-color:var(--dg);background:#FFF5F5}
+    .ltl{display:flex;align-items:center;gap:10px}
+    .ltl .ic{font-size:22px}
+    .ltl .tx strong{display:block;font-size:14px;font-weight:700}
+    .ltl .tx span{display:block;font-size:12px;color:var(--mu)}
+    .tsw{width:48px;height:26px;background:var(--bd);border-radius:30px;position:relative;flex-shrink:0}
+    .tsw.on{background:var(--dg)}
+    .tsw::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
+    .tsw.on::after{left:25px}
+    .abox{background:var(--bg);border:1.5px solid var(--bd);border-radius:12px;padding:1rem;display:flex;gap:1.5rem;margin-bottom:1rem}
+    .ai .num{font-size:24px;font-weight:800;font-family:'Sora',sans-serif;color:var(--ac)}
+    .ai .lbl{font-size:11px;color:var(--mu);font-weight:600;text-transform:uppercase}
+    .df{display:flex;gap:10px;margin-top:1.5rem}
+    .bsv{flex:2;padding:13px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .bsv:hover{background:var(--ad)}
+    .bdl{flex:1;padding:13px;background:transparent;border:2px solid var(--dg);color:var(--dg);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .bqr{padding:13px 16px;background:var(--tl);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
     #qrm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem}
-    #qrm.open{display:flex}
-    .qrc{background:var(--surface);border-radius:20px;padding:2rem;max-width:360px;width:100%;text-align:center}
-    #qr-box{display:flex;justify-content:center;margin-bottom:1rem}
-    .qr-url{font-family:monospace;font-size:12px;color:var(--muted);background:var(--bg);padding:8px 12px;border-radius:8px;word-break:break-all;margin-bottom:1rem}
-    .qr-btns{display:flex;gap:8px}
-    .btn-qrdl{flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
-    .btn-qrcl{flex:1;padding:10px;background:transparent;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif}
+    #qrm.on{display:flex}
+    .qrc{background:var(--sf);border-radius:20px;padding:2rem;max-width:360px;width:100%;text-align:center}
+    #qrb{display:flex;justify-content:center;margin-bottom:1rem}
+    .qurl{font-family:monospace;font-size:12px;color:var(--mu);background:var(--bg);padding:8px 12px;border-radius:8px;word-break:break-all;margin-bottom:1rem}
+    .qbtns{display:flex;gap:8px}
+    .bqdl{flex:1;padding:10px;background:var(--ac);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .bqcl{flex:1;padding:10px;background:transparent;border:2px solid var(--bd);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif}
     .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
-    .toast.show{opacity:1}
+    .toast.on{opacity:1}
   </style>
 </head>
 <body>
-<div id="auth-screen">
-  <div class="auth-card">
+<div id="auth">
+  <div class="acard">
     <div class="logo">
       <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet">
       <p>Tag NFC &amp; QR Code para seu pet</p>
     </div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="setTab('login')">Entrar</button>
-      <button class="auth-tab" id="tab-register" onclick="setTab('register')">Criar conta</button>
+    <div class="atabs">
+      <button class="atab on" id="tl" onclick="setTab('login')">Entrar</button>
+      <button class="atab" id="tr" onclick="setTab('reg')">Criar conta</button>
     </div>
-    <div class="field"><label>E-mail</label><input type="email" id="auth-email" placeholder="seu@email.com"></div>
-    <div class="field"><label>Senha</label><input type="password" id="auth-pass" placeholder="Sua senha"></div>
-    <button class="btn-full" onclick="doAuth()">Entrar</button>
-    <p id="auth-error"></p>
-    <a class="forgot-link" id="forgot-link" onclick="doForgot()">Esqueci minha senha</a>
+    <div class="fi"><label>E-mail</label><input type="email" id="ae" placeholder="seu@email.com"></div>
+    <div class="fi"><label>Senha</label><input type="password" id="ap" placeholder="Sua senha"></div>
+    <button class="bfull" onclick="doAuth()">Entrar</button>
+    <p id="aerr"></p>
+    <a class="forgot" id="fgt" onclick="doForgot()">Esqueci minha senha</a>
   </div>
 </div>
-<div id="app-screen">
+
+<div id="app">
   <nav class="topbar">
-    <div class="topbar-logo"><img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet"></div>
-    <button class="btn-logout" onclick="doLogout()">Sair</button>
+    <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet">
+    <button class="blog" onclick="doLogout()">Sair</button>
   </nav>
   <main class="main">
-    <div class="section-header"><h2>Meus Pets</h2><button class="btn-add" onclick="openDrawer()">+ Adicionar pet</button></div>
-    <div id="pets-grid"><div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div></div>
+    <div class="sh"><h2>Meus Pets</h2><button class="badd" onclick="openD()">+ Adicionar pet</button></div>
+    <div id="grid"><div class="empty"><div class="ic">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div></div>
   </main>
 </div>
-<div class="drawer-overlay" id="drawer-overlay" onclick="bgClose(event)">
+
+<div class="ov" id="ov" onclick="bgCl(event)">
   <div class="drawer">
-    <div class="drawer-header"><h2 id="dtitle">Novo Pet</h2><button class="btn-close" onclick="closeDrawer()">X</button></div>
-    <div class="abox" id="abox" style="display:none">
-      <div class="aitem"><div class="num" id="a-scans">0</div><div class="lbl">Scans</div></div>
-      <div class="aitem"><div class="num" id="a-last">-</div><div class="lbl">Ultimo scan</div></div>
+    <div class="dh"><h2 id="dtit">Novo Pet</h2><button class="bcl" onclick="closeD()">X</button></div>
+    <div class="abox" id="ab" style="display:none">
+      <div class="ai"><div class="num" id="asc">0</div><div class="lbl">Scans</div></div>
+      <div class="ai"><div class="num" id="ala">-</div><div class="lbl">Ultimo scan</div></div>
     </div>
-    <div class="fsec" id="lst-sec" style="display:none">Status</div>
-    <div class="lt" id="lst-tog" style="display:none" onclick="togLost()">
-      <div class="lt-label"><div class="icon">&#x1F6A8;</div><div class="txt"><strong id="lst-lbl">Pet esta em casa</strong><span id="lst-sub">Ative se perdido</span></div></div>
-      <div class="tswitch" id="lst-sw"></div>
+    <div class="fsec" id="lsec" style="display:none">Status</div>
+    <div class="lt" id="ltog" style="display:none" onclick="togL()">
+      <div class="ltl"><div class="ic">&#x1F6A8;</div><div class="tx"><strong id="llbl">Pet esta em casa</strong><span id="lsub">Ative se perdido</span></div></div>
+      <div class="tsw" id="lsw"></div>
     </div>
     <div class="fsec">Foto</div>
-    <div class="photo-upload">
-      <div class="photo-ph" id="photo-ph">&#x1F4F7;</div>
-      <img class="photo-preview" id="photo-prev" src="" alt="">
+    <div class="pup">
+      <div class="pph" id="pph">&#x1F4F7;</div>
+      <img class="pprv" id="pprv" src="" alt="">
       <div>
-        <input type="file" id="photo-inp" accept="image/*" style="display:none" onchange="handlePhoto(this)">
-        <button class="btn-photo" onclick="document.getElementById('photo-inp').click()">Escolher foto</button>
-        <p style="font-size:12px;color:var(--muted);margin-top:6px">JPG/PNG ate 2MB</p>
+        <input type="file" id="pinp" accept="image/*" style="display:none" onchange="hPhoto(this)">
+        <button class="bph" onclick="document.getElementById('pinp').click()">Escolher foto</button>
+        <p style="font-size:12px;color:var(--mu);margin-top:6px">JPG/PNG ate 2MB</p>
       </div>
     </div>
     <div class="fsec">Icone</div>
-    <div class="emoji-picker" id="ep">
-      <div class="emoji-opt selected" data-e="&#x1F436;" onclick="pickEmoji(this)">&#x1F436;</div>
-      <div class="emoji-opt" data-e="&#x1F431;" onclick="pickEmoji(this)">&#x1F431;</div>
-      <div class="emoji-opt" data-e="&#x1F430;" onclick="pickEmoji(this)">&#x1F430;</div>
-      <div class="emoji-opt" data-e="&#x1F434;" onclick="pickEmoji(this)">&#x1F434;</div>
-      <div class="emoji-opt" data-e="&#x1F437;" onclick="pickEmoji(this)">&#x1F437;</div>
-      <div class="emoji-opt" data-e="&#x1F99C;" onclick="pickEmoji(this)">&#x1F99C;</div>
+    <div class="epick" id="ep">
+      <div class="eopt on" data-e="&#x1F436;" onclick="pEmoji(this)">&#x1F436;</div>
+      <div class="eopt" data-e="&#x1F431;" onclick="pEmoji(this)">&#x1F431;</div>
+      <div class="eopt" data-e="&#x1F430;" onclick="pEmoji(this)">&#x1F430;</div>
+      <div class="eopt" data-e="&#x1F434;" onclick="pEmoji(this)">&#x1F434;</div>
+      <div class="eopt" data-e="&#x1F437;" onclick="pEmoji(this)">&#x1F437;</div>
+      <div class="eopt" data-e="&#x1F99C;" onclick="pEmoji(this)">&#x1F99C;</div>
     </div>
     <div class="fsec">Dados</div>
-    <div class="field"><label>Nome *</label><input type="text" id="f-name" placeholder="Ex: Thor"></div>
-    <div class="form-row">
-      <div class="field"><label>Especie</label>
-        <select id="f-species"><option>Cachorro</option><option>Gato</option><option>Coelho</option><option>Cavalo</option><option>Porco</option><option>Arara</option></select>
+    <div class="fi"><label>Nome *</label><input type="text" id="fn" placeholder="Ex: Thor"></div>
+    <div class="frow">
+      <div class="fi"><label>Especie</label>
+        <select id="fsp"><option>Cachorro</option><option>Gato</option><option>Coelho</option><option>Cavalo</option><option>Porco</option><option>Arara</option></select>
       </div>
-      <div class="field"><label>Raca</label><input type="text" id="f-breed" placeholder="Ex: Labrador"></div>
+      <div class="fi"><label>Raca</label><input type="text" id="fbr" placeholder="Ex: Labrador"></div>
     </div>
-    <div class="form-row">
-      <div class="field"><label>Idade</label><input type="text" id="f-age" placeholder="Ex: 3 anos"></div>
-      <div class="field"><label>Cor</label><input type="text" id="f-color" placeholder="Ex: Caramelo"></div>
+    <div class="frow">
+      <div class="fi"><label>Idade</label><input type="text" id="fag" placeholder="Ex: 3 anos"></div>
+      <div class="fi"><label>Cor</label><input type="text" id="fcl" placeholder="Ex: Caramelo"></div>
     </div>
-    <div class="field"><label>Sexo</label>
-      <div class="sex-toggle">
-        <button class="sex-btn" id="bm" onclick="setSex('M')">Macho</button>
-        <button class="sex-btn" id="bf" onclick="setSex('F')">Femea</button>
+    <div class="fi"><label>Sexo</label>
+      <div class="stog">
+        <button class="sbtn" id="bm" onclick="setSex('M')">Macho</button>
+        <button class="sbtn" id="bf" onclick="setSex('F')">Femea</button>
       </div>
     </div>
-    <div class="field"><label>Observacoes</label><textarea id="f-obs" placeholder="Ex: Tem medo de trovao..."></textarea></div>
+    <div class="fi"><label>Observacoes</label><textarea id="fob" placeholder="Ex: Tem medo de trovao..."></textarea></div>
     <div class="fsec">Vacinas</div>
-    <div class="vgrid">
-      <div class="vi" onclick="togV(this)" data-v="raiva"><div class="vdot"></div><span class="vlab">Raiva</span></div>
-      <div class="vi" onclick="togV(this)" data-v="v8v10"><div class="vdot"></div><span class="vlab">V8/V10</span></div>
-      <div class="vi" onclick="togV(this)" data-v="gripe"><div class="vdot"></div><span class="vlab">Gripe</span></div>
-      <div class="vi" onclick="togV(this)" data-v="giardia"><div class="vdot"></div><span class="vlab">Giardia</span></div>
-      <div class="vi" onclick="togV(this)" data-v="v3v4v5"><div class="vdot"></div><span class="vlab">V3, V4 ou V5</span></div>
-      <div class="vi" onclick="togV(this)" data-v="leishmaniose"><div class="vdot"></div><span class="vlab">Leishmaniose</span></div>
-      <div class="vi" onclick="togV(this)" data-v="desparasitado"><div class="vdot"></div><span class="vlab">Desparasitado</span></div>
+    <div class="vg">
+      <div class="vi" onclick="togV(this)" data-v="raiva"><div class="vd"></div><span class="vl">Raiva</span></div>
+      <div class="vi" onclick="togV(this)" data-v="v8v10"><div class="vd"></div><span class="vl">V8/V10</span></div>
+      <div class="vi" onclick="togV(this)" data-v="gripe"><div class="vd"></div><span class="vl">Gripe</span></div>
+      <div class="vi" onclick="togV(this)" data-v="giardia"><div class="vd"></div><span class="vl">Giardia</span></div>
+      <div class="vi" onclick="togV(this)" data-v="v3v4v5"><div class="vd"></div><span class="vl">V3, V4 ou V5</span></div>
+      <div class="vi" onclick="togV(this)" data-v="leishmaniose"><div class="vd"></div><span class="vl">Leishmaniose</span></div>
+      <div class="vi" onclick="togV(this)" data-v="desparasitado"><div class="vd"></div><span class="vl">Desparasitado</span></div>
     </div>
     <div class="fsec">Contato</div>
-    <div class="form-row">
-      <div class="field"><label>Nome *</label><input type="text" id="f-owner" placeholder="Seu nome"></div>
-      <div class="field"><label>Telefone *</label><input type="tel" id="f-phone" placeholder="(11) 99999-9999"></div>
+    <div class="frow">
+      <div class="fi"><label>Nome do dono *</label><input type="text" id="fow" placeholder="Seu nome"></div>
+      <div class="fi"><label>Telefone *</label><input type="tel" id="fph" placeholder="(11) 99999-9999"></div>
     </div>
-    <div class="field"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(11) 99999-9999"></div>
-    <div class="field"><label>Veterinario</label><input type="tel" id="f-vet" placeholder="(11) 3333-3333"></div>
-    <div class="field"><label>Clinica/Vet nome</label><input type="text" id="f-vetname" placeholder="Dr. Fulano"></div>
+    <div class="fi"><label>WhatsApp</label><input type="tel" id="fwa" placeholder="(11) 99999-9999"></div>
+    <div class="fi"><label>Veterinario</label><input type="tel" id="fvt" placeholder="(11) 3333-3333"></div>
+    <div class="fi"><label>Clinica / Vet nome</label><input type="text" id="fvn" placeholder="Dr. Fulano"></div>
     <div class="fsec">Endereco</div>
-    <div class="field"><label>Rua</label><input type="text" id="f-street" placeholder="Rua das Flores, 123"></div>
-    <div class="form-row">
-      <div class="field"><label>Bairro</label><input type="text" id="f-neigh" placeholder="Centro"></div>
-      <div class="field"><label>Cidade</label><input type="text" id="f-city" placeholder="Sao Paulo"></div>
+    <div class="fi"><label>Rua / Avenida</label><input type="text" id="fst" placeholder="Rua das Flores, 123"></div>
+    <div class="frow">
+      <div class="fi"><label>Bairro</label><input type="text" id="fne" placeholder="Centro"></div>
+      <div class="fi"><label>Cidade</label><input type="text" id="fci" placeholder="Sao Paulo"></div>
     </div>
-    <div class="form-row">
-      <div class="field"><label>Estado</label><input type="text" id="f-state" placeholder="SP"></div>
-      <div class="field"><label>CEP</label><input type="text" id="f-cep" placeholder="00000-000"></div>
+    <div class="frow">
+      <div class="fi"><label>Estado</label><input type="text" id="fes" placeholder="SP"></div>
+      <div class="fi"><label>CEP</label><input type="text" id="fcp" placeholder="00000-000"></div>
     </div>
-    <div class="dfooter">
-      <button class="btn-save" onclick="savePet()">Salvar</button>
-      <button class="btn-del" id="btn-del" onclick="delPet()" style="display:none">Excluir</button>
-      <button class="btn-qrt" id="btn-qr" onclick="showQR()" style="display:none">QR Code</button>
+    <div class="df">
+      <button class="bsv" onclick="savePet()">Salvar</button>
+      <button class="bdl" id="bdl" onclick="delPet()" style="display:none">Excluir</button>
+      <button class="bqr" id="bqr" onclick="showQR()" style="display:none">QR Code</button>
     </div>
   </div>
 </div>
+
 <div id="qrm">
   <div class="qrc">
-    <h3 id="qr-title" style="margin-bottom:6px">QR Code</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Imprima na tag do seu pet.</p>
-    <div id="qr-box"></div>
-    <div class="qr-url" id="qr-url"></div>
-    <div class="qr-btns">
-      <button class="btn-qrdl" onclick="dlQR()">Baixar</button>
-      <button class="btn-qrcl" onclick="document.getElementById('qrm').classList.remove('open')">Fechar</button>
+    <h3 id="qtit" style="margin-bottom:6px">QR Code</h3>
+    <p style="font-size:13px;color:var(--mu);margin-bottom:1.5rem">Imprima na tag do seu pet.</p>
+    <div id="qrb"></div>
+    <div class="qurl" id="qurl"></div>
+    <div class="qbtns">
+      <button class="bqdl" onclick="dlQR()">Baixar</button>
+      <button class="bqcl" onclick="document.getElementById('qrm').classList.remove('on')">Fechar</button>
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script>
-var FB_CFG = {
+var fbCfg = {
   apiKey: "AIzaSyACFKTkl9hni4OolOLjMdZgNpKs8QN6lvw",
   authDomain: "tang-nfc.firebaseapp.com",
   projectId: "tang-nfc",
@@ -246,192 +251,173 @@ var FB_CFG = {
   messagingSenderId: "257508461118",
   appId: "1:257508461118:web:0a824daf95946739c29f6f"
 };
-firebase.initializeApp(FB_CFG);
+firebase.initializeApp(fbCfg);
 var auth = firebase.auth();
 var db = firebase.firestore();
 
-var curUser = null, pets = [], editId = null, selSex = null, selEmoji = null, photo64 = null, isLost = false;
-var curTab = 'login';
+var cu=null, pets=[], eid=null, sex=null, emoji=null, ph64=null, lost=false, tab='login';
 
-function setTab(mode) {
-  curTab = mode;
-  document.getElementById('tab-login').className = 'auth-tab' + (mode === 'login' ? ' active' : '');
-  document.getElementById('tab-register').className = 'auth-tab' + (mode === 'register' ? ' active' : '');
-  document.getElementById('auth-error').textContent = '';
-  document.getElementById('forgot-link').style.display = mode === 'login' ? 'block' : 'none';
+function setTab(t) {
+  tab=t;
+  document.getElementById('tl').className='atab'+(t==='login'?' on':'');
+  document.getElementById('tr').className='atab'+(t==='reg'?' on':'');
+  document.getElementById('aerr').textContent='';
+  document.getElementById('fgt').style.display=t==='login'?'block':'none';
 }
 
 function doAuth() {
-  var email = document.getElementById('auth-email').value.trim();
-  var pass = document.getElementById('auth-pass').value;
-  var errEl = document.getElementById('auth-error');
-  errEl.textContent = ''; errEl.style.color = 'var(--danger)';
-  if (!email || !pass) { errEl.textContent = 'Preencha e-mail e senha.'; return; }
-  var promise = curTab === 'login'
-    ? auth.signInWithEmailAndPassword(email, pass)
-    : auth.createUserWithEmailAndPassword(email, pass);
-  promise.catch(function(err) {
-    var msgs = {
-      'auth/user-not-found': 'Usuario nao encontrado.',
-      'auth/wrong-password': 'Senha incorreta.',
-      'auth/email-already-in-use': 'E-mail ja cadastrado.',
-      'auth/weak-password': 'Senha fraca (minimo 6 caracteres).',
-      'auth/invalid-email': 'E-mail invalido.',
-      'auth/invalid-credential': 'E-mail ou senha incorretos.'
-    };
-    errEl.textContent = msgs[err.code] || 'Erro: ' + err.message;
+  var e=document.getElementById('ae').value.trim();
+  var p=document.getElementById('ap').value;
+  var el=document.getElementById('aerr');
+  el.textContent=''; el.style.color='var(--dg)';
+  if(!e||!p){el.textContent='Preencha e-mail e senha.';return;}
+  var pr=tab==='login'?auth.signInWithEmailAndPassword(e,p):auth.createUserWithEmailAndPassword(e,p);
+  pr.catch(function(err){
+    var m={'auth/user-not-found':'Usuario nao encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'E-mail ja cadastrado.','auth/weak-password':'Senha fraca (minimo 6).','auth/invalid-email':'E-mail invalido.','auth/invalid-credential':'E-mail ou senha incorretos.'};
+    el.textContent=m[err.code]||'Erro: '+err.message;
   });
 }
 
 function doForgot() {
-  var email = document.getElementById('auth-email').value.trim();
-  var errEl = document.getElementById('auth-error');
-  if (!email) { errEl.textContent = 'Digite seu e-mail acima primeiro.'; errEl.style.color = 'var(--accent)'; return; }
-  auth.sendPasswordResetEmail(email).then(function() {
-    errEl.textContent = 'E-mail de recuperacao enviado!';
-    errEl.style.color = 'green';
-  }).catch(function(err) {
-    errEl.textContent = err.code === 'auth/user-not-found' ? 'E-mail nao encontrado.' : 'Erro ao enviar.';
-    errEl.style.color = 'var(--danger)';
+  var e=document.getElementById('ae').value.trim();
+  var el=document.getElementById('aerr');
+  if(!e){el.textContent='Digite seu e-mail acima.';el.style.color='var(--ac)';return;}
+  auth.sendPasswordResetEmail(e).then(function(){
+    el.textContent='E-mail de recuperacao enviado!';el.style.color='green';
+  }).catch(function(err){
+    el.textContent=err.code==='auth/user-not-found'?'E-mail nao encontrado.':'Erro ao enviar.';
+    el.style.color='var(--dg)';
   });
 }
 
-function doLogout() { auth.signOut(); }
+function doLogout(){auth.signOut();}
 
-auth.onAuthStateChanged(function(user) {
-  curUser = user;
-  if (user) {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
+auth.onAuthStateChanged(function(user){
+  cu=user;
+  if(user){
+    document.getElementById('auth').style.display='none';
+    document.getElementById('app').style.display='block';
     loadPets();
   } else {
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('auth').style.display='flex';
+    document.getElementById('app').style.display='none';
   }
 });
 
-function loadPets() {
-  db.collection('users').doc(curUser.uid).collection('pets').get().then(function(snap) {
-    pets = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+function loadPets(){
+  db.collection('users').doc(cu.uid).collection('pets').get().then(function(s){
+    pets=s.docs.map(function(d){return Object.assign({id:d.id},d.data());});
     renderPets();
-  }).catch(function(e) { toast('Erro ao carregar: ' + e.message); });
+  }).catch(function(e){toast('Erro: '+e.message);});
 }
 
-function renderPets() {
-  var grid = document.getElementById('pets-grid');
-  if (!pets.length) { grid.innerHTML = '<div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div>'; return; }
-  grid.innerHTML = pets.map(function(p) {
-    var sc = p.scanCount || 0;
-    var badge = '<span class="pet-card-scans' + (sc > 0 ? ' has-scans' : '') + '">' + sc + ' scans</span>';
-    var av = p.photo ? '<img class="pet-card-photo" src="' + p.photo + '">' : '<div class="pet-card-avatar">' + (p.emoji || '&#x1F43E;') + '</div>';
-    var tag = p.lost ? '<span class="pet-card-tag lost">PERDIDO</span>' : '<span class="pet-card-tag">Tag ativa</span>';
-    return '<div class="pet-card' + (p.lost ? ' lost' : '') + '" onclick="openDrawer('' + p.id + '')">' + badge + av + '<div class="pet-card-name">' + p.name + '</div><div class="pet-card-sub">' + (p.species || '') + (p.breed ? ' - ' + p.breed : '') + '</div>' + tag + '</div>';
+function renderPets(){
+  var g=document.getElementById('grid');
+  if(!pets.length){g.innerHTML='<div class="empty"><div class="ic">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div>';return;}
+  g.innerHTML=pets.map(function(p){
+    var sc=p.scanCount||0;
+    var bd='<span class="csc'+(sc>0?' hs':'')+'">'+(sc>0?sc+' scans':'0 scans')+'</span>';
+    var av=p.photo?'<img class="cphoto" src="'+p.photo+'">':'<div class="cavt">'+(p.emoji||'&#x1F43E;')+'</div>';
+    var tg=p.lost?'<span class="ctag lost">PERDIDO</span>':'<span class="ctag">Tag ativa</span>';
+    return '<div class="card'+(p.lost?' lost':'')+'" onclick="openD(\''+p.id+'\')">'  +bd+av+'<div class="cname">'+p.name+'</div><div class="csub">'+(p.species||'')+(p.breed?' - '+p.breed:'')+'</div>'+tg+'</div>';
   }).join('');
 }
 
-function openDrawer(id) {
-  id = id || null;
-  editId = id; resetForm();
-  var pet = id ? pets.find(function(p) { return p.id === id; }) : null;
-  document.getElementById('dtitle').textContent = pet ? 'Editar: ' + pet.name : 'Novo Pet';
-  document.getElementById('btn-del').style.display = pet ? 'block' : 'none';
-  document.getElementById('btn-qr').style.display = pet ? 'block' : 'none';
-  document.getElementById('lst-sec').style.display = pet ? 'block' : 'none';
-  document.getElementById('lst-tog').style.display = pet ? 'flex' : 'none';
-  if (pet) {
-    document.getElementById('abox').style.display = 'flex';
-    document.getElementById('a-scans').textContent = pet.scanCount || 0;
-    document.getElementById('a-last').textContent = pet.lastScannedAt ? new Date(pet.lastScannedAt).toLocaleDateString('pt-BR') : '-';
-    var fields = { name: 'f-name', breed: 'f-breed', age: 'f-age', color: 'f-color', obs: 'f-obs', ownerName: 'f-owner', phone: 'f-phone', whatsapp: 'f-whatsapp', vetPhone: 'f-vet', vetName: 'f-vetname', street: 'f-street', neighborhood: 'f-neigh', city: 'f-city', state: 'f-state', cep: 'f-cep' };
-    Object.keys(fields).forEach(function(k) { document.getElementById(fields[k]).value = pet[k] || ''; });
-    document.getElementById('f-species').value = pet.species || 'Cachorro';
-    if (pet.sex) setSex(pet.sex);
-    if (pet.emoji) {
-      document.querySelectorAll('.emoji-opt').forEach(function(e) {
-        e.classList.toggle('selected', e.dataset.e === pet.emoji);
-        if (e.dataset.e === pet.emoji) selEmoji = pet.emoji;
-      });
-    }
-    if (pet.photo) { photo64 = pet.photo; document.getElementById('photo-prev').src = pet.photo; document.getElementById('photo-prev').style.display = 'block'; document.getElementById('photo-ph').style.display = 'none'; }
-    document.querySelectorAll('.vi').forEach(function(el) { if (pet.vaccines && pet.vaccines[el.dataset.v]) el.classList.add('checked'); });
-    isLost = !!pet.lost; updLost();
-  } else { document.getElementById('abox').style.display = 'none'; }
-  document.getElementById('drawer-overlay').classList.add('open');
+function openD(id) {
+  id=id||null; eid=id; resetF();
+  var p=id?pets.find(function(x){return x.id===id;}):null;
+  document.getElementById('dtit').textContent=p?'Editar: '+p.name:'Novo Pet';
+  document.getElementById('bdl').style.display=p?'block':'none';
+  document.getElementById('bqr').style.display=p?'block':'none';
+  document.getElementById('lsec').style.display=p?'block':'none';
+  document.getElementById('ltog').style.display=p?'flex':'none';
+  if(p){
+    document.getElementById('ab').style.display='flex';
+    document.getElementById('asc').textContent=p.scanCount||0;
+    document.getElementById('ala').textContent=p.lastScannedAt?new Date(p.lastScannedAt).toLocaleDateString('pt-BR'):'-';
+    var fm={name:'fn',breed:'fbr',age:'fag',color:'fcl',obs:'fob',ownerName:'fow',phone:'fph',whatsapp:'fwa',vetPhone:'fvt',vetName:'fvn',street:'fst',neighborhood:'fne',city:'fci',state:'fes',cep:'fcp'};
+    Object.keys(fm).forEach(function(k){document.getElementById(fm[k]).value=p[k]||'';});
+    document.getElementById('fsp').value=p.species||'Cachorro';
+    if(p.sex)setSex(p.sex);
+    if(p.emoji){document.querySelectorAll('.eopt').forEach(function(e){e.classList.toggle('on',e.dataset.e===p.emoji);if(e.dataset.e===p.emoji)emoji=p.emoji;});}
+    if(p.photo){ph64=p.photo;document.getElementById('pprv').src=p.photo;document.getElementById('pprv').style.display='block';document.getElementById('pph').style.display='none';}
+    document.querySelectorAll('.vi').forEach(function(el){if(p.vaccines&&p.vaccines[el.dataset.v])el.classList.add('on');});
+    lost=!!p.lost; updL();
+  } else {document.getElementById('ab').style.display='none';}
+  document.getElementById('ov').classList.add('on');
 }
 
-function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
-function bgClose(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
-function togLost() { isLost = !isLost; updLost(); }
-function updLost() {
-  var sw = document.getElementById('lst-sw'), lbl = document.getElementById('lst-lbl'), sub = document.getElementById('lst-sub'), tog = document.getElementById('lst-tog');
-  if (isLost) { sw.classList.add('on'); tog.classList.add('active'); lbl.textContent = 'Pet PERDIDO!'; sub.textContent = 'Tag mostrara alerta vermelho'; }
-  else { sw.classList.remove('on'); tog.classList.remove('active'); lbl.textContent = 'Pet esta em casa'; sub.textContent = 'Ative se perdido'; }
+function closeD(){document.getElementById('ov').classList.remove('on');}
+function bgCl(e){if(e.target===document.getElementById('ov'))closeD();}
+function togL(){lost=!lost;updL();}
+function updL(){
+  var sw=document.getElementById('lsw'),lb=document.getElementById('llbl'),sb=document.getElementById('lsub'),tg=document.getElementById('ltog');
+  if(lost){sw.classList.add('on');tg.classList.add('on');lb.textContent='Pet PERDIDO!';sb.textContent='Tag mostrara alerta vermelho';}
+  else{sw.classList.remove('on');tg.classList.remove('on');lb.textContent='Pet esta em casa';sb.textContent='Ative se perdido';}
 }
-function resetForm() {
-  ['f-name','f-breed','f-age','f-color','f-obs','f-owner','f-phone','f-whatsapp','f-vet','f-vetname','f-street','f-neigh','f-city','f-state','f-cep'].forEach(function(id) { document.getElementById(id).value = ''; });
-  document.getElementById('f-species').value = 'Cachorro';
-  selSex = null; selEmoji = null; photo64 = null; isLost = false;
-  document.getElementById('photo-prev').style.display = 'none';
-  document.getElementById('photo-ph').style.display = 'flex';
-  document.querySelectorAll('.emoji-opt').forEach(function(e) { e.classList.remove('selected'); });
-  var first = document.querySelector('.emoji-opt');
-  if (first) { first.classList.add('selected'); selEmoji = first.dataset.e; }
-  document.querySelectorAll('.sex-btn').forEach(function(b) { b.className = 'sex-btn'; });
-  document.querySelectorAll('.vi').forEach(function(el) { el.classList.remove('checked'); });
-  updLost();
+function resetF(){
+  ['fn','fbr','fag','fcl','fob','fow','fph','fwa','fvt','fvn','fst','fne','fci','fes','fcp'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('fsp').value='Cachorro';
+  sex=null;emoji=null;ph64=null;lost=false;
+  document.getElementById('pprv').style.display='none';
+  document.getElementById('pph').style.display='flex';
+  document.querySelectorAll('.eopt').forEach(function(e){e.classList.remove('on');});
+  var f=document.querySelector('.eopt');if(f){f.classList.add('on');emoji=f.dataset.e;}
+  document.querySelectorAll('.sbtn').forEach(function(b){b.className='sbtn';});
+  document.querySelectorAll('.vi').forEach(function(el){el.classList.remove('on');});
+  updL();
 }
-function pickEmoji(el) { document.querySelectorAll('.emoji-opt').forEach(function(e) { e.classList.remove('selected'); }); el.classList.add('selected'); selEmoji = el.dataset.e; }
-function setSex(s) { selSex = s; document.getElementById('bm').className = 'sex-btn' + (s === 'M' ? ' am' : ''); document.getElementById('bf').className = 'sex-btn' + (s === 'F' ? ' af' : ''); }
-function togV(el) { el.classList.toggle('checked'); }
-function handlePhoto(input) {
-  var file = input.files[0]; if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { toast('Foto muito grande. Max 2MB.'); return; }
-  var reader = new FileReader();
-  reader.onload = function(e) { photo64 = e.target.result; document.getElementById('photo-prev').src = photo64; document.getElementById('photo-prev').style.display = 'block'; document.getElementById('photo-ph').style.display = 'none'; };
-  reader.readAsDataURL(file);
+function pEmoji(el){document.querySelectorAll('.eopt').forEach(function(e){e.classList.remove('on');});el.classList.add('on');emoji=el.dataset.e;}
+function setSex(s){sex=s;document.getElementById('bm').className='sbtn'+(s==='M'?' am':'');document.getElementById('bf').className='sbtn'+(s==='F'?' af':'');}
+function togV(el){el.classList.toggle('on');}
+function hPhoto(inp){
+  var f=inp.files[0];if(!f)return;
+  if(f.size>2*1024*1024){toast('Foto muito grande. Max 2MB.');return;}
+  var r=new FileReader();
+  r.onload=function(e){ph64=e.target.result;document.getElementById('pprv').src=ph64;document.getElementById('pprv').style.display='block';document.getElementById('pph').style.display='none';};
+  r.readAsDataURL(f);
 }
-function savePet() {
-  var name = document.getElementById('f-name').value.trim();
-  var ownerName = document.getElementById('f-owner').value.trim();
-  var phone = document.getElementById('f-phone').value.trim();
-  if (!name) { toast('Informe o nome do pet.'); return; }
-  if (!ownerName || !phone) { toast('Informe nome e telefone do dono.'); return; }
-  var vaccines = {};
-  document.querySelectorAll('.vi').forEach(function(el) { vaccines[el.dataset.v] = el.classList.contains('checked'); });
-  var data = { name: name, ownerName: ownerName, phone: phone, species: document.getElementById('f-species').value, breed: document.getElementById('f-breed').value.trim(), age: document.getElementById('f-age').value.trim(), color: document.getElementById('f-color').value.trim(), obs: document.getElementById('f-obs').value.trim(), whatsapp: document.getElementById('f-whatsapp').value.trim(), vetPhone: document.getElementById('f-vet').value.trim(), vetName: document.getElementById('f-vetname').value.trim(), street: document.getElementById('f-street').value.trim(), neighborhood: document.getElementById('f-neigh').value.trim(), city: document.getElementById('f-city').value.trim(), state: document.getElementById('f-state').value.trim(), cep: document.getElementById('f-cep').value.trim(), sex: selSex, emoji: selEmoji, photo: photo64 || null, vaccines: vaccines, lost: isLost, updatedAt: new Date().toISOString() };
-  var btn = document.querySelector('.btn-save'); btn.textContent = 'Salvando...'; btn.disabled = true;
-  var col = db.collection('users').doc(curUser.uid).collection('pets');
-  var promise = editId ? col.doc(editId).set(data, { merge: true }) : col.add(data);
-  promise.then(function() {
-    loadPets(); closeDrawer();
-    toast(isLost ? 'Pet marcado como PERDIDO!' : 'Pet salvo!');
-  }).catch(function(e) { toast('Erro: ' + e.message); })
-
-function delPet() {
-  if (!editId) return;
-  if (!confirm('Excluir este pet?')) return;
-  db.collection('users').doc(curUser.uid).collection('pets').doc(editId).delete().then(function() {
-    loadPets(); closeDrawer(); toast('Pet excluido.');
-  }).catch(function(e) { toast('Erro: ' + e.message); });
+function savePet(){
+  var name=document.getElementById('fn').value.trim();
+  var own=document.getElementById('fow').value.trim();
+  var ph=document.getElementById('fph').value.trim();
+  if(!name){toast('Informe o nome do pet.');return;}
+  if(!own||!ph){toast('Informe nome e telefone do dono.');return;}
+  var vac={};
+  document.querySelectorAll('.vi').forEach(function(el){vac[el.dataset.v]=el.classList.contains('on');});
+  var d={name:name,ownerName:own,phone:ph,species:document.getElementById('fsp').value,breed:document.getElementById('fbr').value.trim(),age:document.getElementById('fag').value.trim(),color:document.getElementById('fcl').value.trim(),obs:document.getElementById('fob').value.trim(),whatsapp:document.getElementById('fwa').value.trim(),vetPhone:document.getElementById('fvt').value.trim(),vetName:document.getElementById('fvn').value.trim(),street:document.getElementById('fst').value.trim(),neighborhood:document.getElementById('fne').value.trim(),city:document.getElementById('fci').value.trim(),state:document.getElementById('fes').value.trim(),cep:document.getElementById('fcp').value.trim(),sex:sex,emoji:emoji,photo:ph64||null,vaccines:vac,lost:lost,updatedAt:new Date().toISOString()};
+  var btn=document.querySelector('.bsv');btn.textContent='Salvando...';btn.disabled=true;
+  var col=db.collection('users').doc(cu.uid).collection('pets');
+  var pr=eid?col.doc(eid).set(d,{merge:true}):col.add(d);
+  pr.then(function(){loadPets();closeD();toast(lost?'Pet marcado como PERDIDO!':'Pet salvo!');})
+    .catch(function(e){toast('Erro: '+e.message);})
+    .finally(function(){btn.textContent='Salvar';btn.disabled=false;});
 }
-function showQR() {
-  if (!editId) return;
-  var slug = curUser.uid + '_' + editId;
-  var url = location.origin + '/pet/' + slug;
-  var pet = pets.find(function(p) { return p.id === editId; });
-  document.getElementById('qr-title').textContent = 'QR Code - ' + (pet ? pet.name : 'Pet');
-  document.getElementById('qr-url').textContent = url;
-  var box = document.getElementById('qr-box'); box.innerHTML = '';
-  new QRCode(box, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
-  document.getElementById('qrm').classList.add('open');
+function delPet(){
+  if(!eid)return;
+  if(!confirm('Excluir este pet?'))return;
+  db.collection('users').doc(cu.uid).collection('pets').doc(eid).delete()
+    .then(function(){loadPets();closeD();toast('Pet excluido.');})
+    .catch(function(e){toast('Erro: '+e.message);});
 }
-function dlQR() {
-  var canvas = document.querySelector('#qr-box canvas'); if (!canvas) return;
-  var a = document.createElement('a'); a.download = 'petnfc-qrcode.png'; a.href = canvas.toDataURL(); a.click();
+function showQR(){
+  if(!eid)return;
+  var slug=cu.uid+'_'+eid;
+  var url=location.origin+'/pet/'+slug;
+  var p=pets.find(function(x){return x.id===eid;});
+  document.getElementById('qtit').textContent='QR Code - '+(p?p.name:'Pet');
+  document.getElementById('qurl').textContent=url;
+  var b=document.getElementById('qrb');b.innerHTML='';
+  new QRCode(b,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
+  document.getElementById('qrm').classList.add('on');
 }
-function toast(msg) {
-  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 3000);
+function dlQR(){
+  var c=document.querySelector('#qrb canvas');if(!c)return;
+  var a=document.createElement('a');a.download='petnfc-qrcode.png';a.href=c.toDataURL();a.click();
+}
+function toast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},3000);
 }
 </script>
 </body>
