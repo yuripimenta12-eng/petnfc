@@ -3,149 +3,206 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ð¾ Encontrei um pet!</title>
+  <title>Encontrei um pet!</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#FF8320" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{--orange:#FF8320;--orange-dark:#E06E10;--teal:#00C7B2;--dark:#414141;--black:#000000;--red:#C1343A;--red-bg:#FDECEA;--bg:#FFF4E0;--surface:#FFFFFF;--border:#F0D9B5;}
-    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--black);min-height:100vh;padding-bottom:2rem;}
-    #state-loading,#state-error{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:2rem;background:var(--bg);}
-    .spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    #state-error .icon{font-size:56px;}
-    #state-error h2{font-family:'Sora',sans-serif;font-size:22px;}
-    #state-error p{color:var(--dark);font-size:15px;}
-    #state-error a{display:inline-block;margin-top:1.5rem;padding:12px 28px;background:var(--orange);color:white;border-radius:12px;text-decoration:none;font-weight:700;}
-    #state-pet{display:none;}
-    .pet-page{max-width:460px;margin:0 auto;padding:0 1rem;}
-    .pet-header{background:var(--orange);border-radius:0 0 28px 28px;padding:2rem 2rem 3.5rem;text-align:center;}
-    .pet-header.lost{background:var(--red);}
-    .pet-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.6);margin:0 auto 1rem;display:block;}
-    .pet-emoji-wrap{width:96px;height:96px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:52px;margin:0 auto 1rem;border:3px solid rgba(255,255,255,0.35);}
-    .pet-header h1{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:white;}
-    .pet-header .sub{font-size:14px;color:rgba(255,255,255,0.85);margin-top:4px;}
-    .sex-badge{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:700;background:rgba(255,255,255,0.25);color:white;}
-    .lost-banner{background:var(--red-bg);border:2px solid var(--red);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin:-1.25rem 0 1.25rem;position:relative;z-index:2;}
-    .lost-banner .icon{font-size:32px;flex-shrink:0;}
-    .lost-banner strong{display:block;font-size:16px;font-weight:800;color:var(--red);}
-    .lost-banner p{font-size:13px;color:var(--dark);margin-top:2px;}
-    .found-banner{background:rgba(255,131,32,0.10);border:1.5px solid var(--orange);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin:-1.25rem 0 1.25rem;position:relative;z-index:2;}
-    .found-banner .icon{font-size:28px;flex-shrink:0;}
-    .found-banner strong{display:block;font-size:15px;font-weight:700;color:var(--orange-dark);}
-    .found-banner p{font-size:13px;color:var(--dark);margin-top:2px;}
-    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
-    .info-pill{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;}
-    .info-pill .lbl{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;}
-    .info-pill .val{font-size:14px;font-weight:600;margin-top:2px;}
-    .vaccines-section{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1rem;}
-    .vaccines-section .lbl{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
-    .vaccines-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-    .vac-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;}
-    .vac-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
-    .vac-dot.yes{background:var(--orange);}
-    .vac-dot.no{background:var(--border);}
-    .obs-box{background:rgba(255,131,32,0.07);border:1.5px solid var(--orange);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
-    .obs-box .lbl{font-size:11px;font-weight:800;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
-    .obs-box p{font-size:14px;color:var(--dark);line-height:1.6;}
-    .address-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px;}
-    .address-box .addr-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
-    .address-box .addr-content .lbl{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
-    .address-box .addr-content p{font-size:14px;font-weight:600;line-height:1.5;}
-    .contact-section{margin-bottom:1.5rem;}
-    .contact-section h3{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
-    .contact-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--black);margin-bottom:8px;transition:box-shadow .15s,transform .1s;}
-    .contact-btn:hover{box-shadow:0 4px 16px rgba(255,131,32,0.15);transform:translateY(-1px);border-color:var(--orange);}
-    .contact-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-    .contact-icon.call{background:rgba(255,131,32,0.12);}
-    .contact-icon.whats{background:rgba(0,199,178,0.12);}
-    .contact-icon.vet{background:rgba(65,65,65,0.08);}
-    .contact-info .name{font-size:15px;font-weight:700;}
-    .contact-info .phone{font-size:13px;color:var(--dark);margin-top:2px;}
-    .contact-cta{margin-left:auto;font-size:13px;font-weight:700;color:var(--orange);flex-shrink:0;}
-    .footer{text-align:center;padding-top:1rem;}
-    .footer p{font-size:12px;color:var(--dark);}
-    .footer a{color:var(--orange);text-decoration:none;font-weight:700;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--orange:#FF8320;--orange-dark:#E06E10;--teal:#00C7B2;--dark:#414141;--black:#000;--red:#C1343A;--red-bg:#FDECEA;--bg:#FFF4E0;--surface:#fff;--border:#F0D9B5}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--black);min-height:100vh;padding-bottom:2rem}
+    #state-loading,#state-error{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:2rem;background:var(--bg)}
+    .spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #state-error h2{font-family:'Sora',sans-serif;font-size:22px}
+    #state-error p{color:var(--dark);font-size:15px}
+    #state-error a{display:inline-block;margin-top:1.5rem;padding:12px 28px;background:var(--orange);color:white;border-radius:12px;text-decoration:none;font-weight:700}
+    #state-pet{display:none}
+    .pet-page{max-width:460px;margin:0 auto;padding:0 1rem}
+    .pet-header{background:var(--orange);border-radius:0 0 28px 28px;padding:2rem 2rem 3.5rem;text-align:center}
+    .pet-header.lost{background:var(--red)}
+    .pet-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.6);margin:0 auto 1rem;display:block}
+    .pet-emoji-wrap{width:96px;height:96px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:52px;margin:0 auto 1rem;border:3px solid rgba(255,255,255,0.35)}
+    .pet-header h1{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;color:white}
+    .pet-header .sub{font-size:14px;color:rgba(255,255,255,0.85);margin-top:4px}
+    .sex-badge{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:700;background:rgba(255,255,255,0.25);color:white}
+    .lost-banner{background:var(--red-bg);border:2px solid var(--red);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin:-1.25rem 0 1.25rem;position:relative;z-index:2}
+    .lost-banner .icon{font-size:32px;flex-shrink:0}
+    .lost-banner strong{display:block;font-size:16px;font-weight:800;color:var(--red)}
+    .lost-banner p{font-size:13px;color:var(--dark);margin-top:2px}
+    .found-banner{background:rgba(255,131,32,0.10);border:1.5px solid var(--orange);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin:-1.25rem 0 1.25rem;position:relative;z-index:2}
+    .found-banner .icon{font-size:28px;flex-shrink:0}
+    .found-banner strong{display:block;font-size:15px;font-weight:700;color:var(--orange-dark)}
+    .found-banner p{font-size:13px;color:var(--dark);margin-top:2px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+    .info-pill{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px}
+    .info-pill .lbl{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em}
+    .info-pill .val{font-size:14px;font-weight:600;margin-top:2px}
+    .vaccines-section{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1rem}
+    .vaccines-section .lbl{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+    .vaccines-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .vac-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+    .vac-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
+    .vac-dot.yes{background:var(--orange)}
+    .vac-dot.no{background:var(--border)}
+    .obs-box{background:rgba(255,131,32,0.07);border:1.5px solid var(--orange);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+    .obs-box .lbl{font-size:11px;font-weight:800;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+    .obs-box p{font-size:14px;color:var(--dark);line-height:1.6}
+    .address-box{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1rem;display:flex;align-items:flex-start;gap:10px}
+    .address-box .addr-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+    .address-box .addr-content .lbl{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+    .address-box .addr-content p{font-size:14px;font-weight:600;line-height:1.5}
+    .contact-section{margin-bottom:1.5rem}
+    .contact-section h3{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+    .contact-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--black);margin-bottom:8px;transition:box-shadow .15s,transform .1s}
+    .contact-btn:hover{box-shadow:0 4px 16px rgba(255,131,32,0.15);transform:translateY(-1px);border-color:var(--orange)}
+    .contact-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .contact-icon.call{background:rgba(255,131,32,0.12)}
+    .contact-icon.whats{background:rgba(0,199,178,0.12)}
+    .contact-icon.vet{background:rgba(65,65,65,0.08)}
+    .contact-info .name{font-size:15px;font-weight:700}
+    .contact-info .phone{font-size:13px;color:var(--dark);margin-top:2px}
+    .contact-cta{margin-left:auto;font-size:13px;font-weight:700;color:var(--orange);flex-shrink:0}
+    .footer{text-align:center;padding-top:1rem}
+    .footer p{font-size:12px;color:var(--dark)}
+    .footer a{color:var(--orange);text-decoration:none;font-weight:700}
   </style>
 </head>
 <body>
 <div id="state-loading"><div class="spinner"></div><p style="color:#414141;margin-top:1rem">Carregando dados do pet...</p></div>
 <div id="state-error" style="display:none">
-  <div class="icon">ð</div><h2>Tag nÃ£o encontrada</h2>
-  <p>Este link pode ser invÃ¡lido ou o pet foi removido.</p>
-  <a href="/">Ir para o inÃ­cio</a>
+  <h2>Tag nao encontrada</h2>
+  <p>Este link pode ser invalido ou o pet foi removido.</p>
+  <a href="/">Ir para o inicio</a>
 </div>
 <div id="state-pet">
   <div class="pet-header" id="pet-header">
     <img class="pet-photo" id="p-photo" src="" alt="foto" style="display:none" />
-    <div class="pet-emoji-wrap" id="p-emoji-wrap">ð¾</div>
+    <div class="pet-emoji-wrap" id="p-emoji-wrap">&#x1F43E;</div>
     <h1 id="p-name">Carregando...</h1>
-    <p class="sub" id="p-sub">â</p>
+    <p class="sub" id="p-sub">-</p>
     <span class="sex-badge" id="p-sex" style="display:none"></span>
   </div>
   <div class="pet-page">
     <div id="banner-container"></div>
     <div class="info-grid" id="info-grid"></div>
-    <div class="vaccines-section" id="vaccines-section" style="display:none"><div class="lbl">ð Vacinas</div><div class="vaccines-list" id="vaccines-list"></div></div>
-    <div class="obs-box" id="obs-box" style="display:none"><div class="lbl">â ï¸ ObservaÃ§Ãµes</div><p id="p-obs"></p></div>
+    <div class="vaccines-section" id="vaccines-section" style="display:none">
+      <div class="lbl">Vacinas</div>
+      <div class="vaccines-list" id="vaccines-list"></div>
+    </div>
+    <div class="obs-box" id="obs-box" style="display:none">
+      <div class="lbl">Observacoes</div>
+      <p id="p-obs"></p>
+    </div>
     <div class="address-box" id="address-box" style="display:none">
-      <div class="addr-icon">ð</div>
-      <div class="addr-content"><div class="lbl">EndereÃ§o do Dono</div><p id="p-address"></p></div>
+      <div class="addr-icon">&#x1F4CD;</div>
+      <div class="addr-content">
+        <div class="lbl">Endereco do Dono</div>
+        <p id="p-address"></p>
+      </div>
     </div>
     <div class="contact-section" id="contact-section"></div>
-    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> Â· Identifique seu pet com NFC & QR Code</p></div>
+    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> - Identifique seu pet com NFC &amp; QR Code</p></div>
   </div>
 </div>
 <script type="module">
 import { getPetBySlug, incrementScan } from '/firebase.js';
-const EJS_KEY='wMKdLso1I33GtEACr', EJS_SVC='service_9m9t14l', EJS_TPL='template_s8de3rq';
+
+const EJS_KEY = 'wMKdLso1I33GtEACr';
+const EJS_SVC = 'service_9m9t14l';
+const EJS_TPL = 'template_s8de3rq';
+
 const vNames = { castrado:'Castrado', raiva:'Raiva', gripe:'Gripe', giardia:'Giardia', v3v4v5:'V3/V4/V5', v8v10:'V8/V10', leishmaniose:'Leishmaniose', desparasitado:'Desparasitado', vermifugado:'Vermifugado' };
-async function sendEmail(pet){try{emailjs.init(EJS_KEY);const t=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});await emailjs.send(EJS_SVC,EJS_TPL,{pet_name:pet.name,owner_name:pet.ownerName||'Dono',scan_time:t,name:pet.ownerName||'Dono',email:'yuripimenta12@gmail.com',pet_url:location.href});}catch(e){console.warn('[EmailJS]',e);}}
-function showError(){document.getElementById('state-loading').style.display='none';document.getElementById('state-error').style.display='flex';}
-async function init(){
-  const parts=location.pathname.split('/');
-  const slug=parts[parts.length-1]||new URLSearchParams(location.search).get('slug');
-  if(!slug||slug==='pet'){showError();return;}
-  try{
-    const pet=await getPetBySlug(slug);
-    if(!pet){showError();return;}
-    const[userId]=slug.split('_');
-    incrementScan(userId,pet.id);
+
+async function sendEmail(pet) {
+  try {
+    emailjs.init(EJS_KEY);
+    var t = new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
+    await emailjs.send(EJS_SVC, EJS_TPL, { pet_name: pet.name, owner_name: pet.ownerName || 'Dono', scan_time: t, name: pet.ownerName || 'Dono', email: 'yuripimenta12@gmail.com', pet_url: location.href });
+  } catch(e) { console.warn('[EmailJS]', e); }
+}
+
+function showError() {
+  document.getElementById('state-loading').style.display = 'none';
+  document.getElementById('state-error').style.display = 'flex';
+}
+
+async function init() {
+  var parts = location.pathname.split('/');
+  var slug = parts[parts.length - 1] || new URLSearchParams(location.search).get('slug');
+  if (!slug || slug === 'pet') { showError(); return; }
+  try {
+    var pet = await getPetBySlug(slug);
+    if (!pet) { showError(); return; }
+    var userId = slug.split('_')[0];
+    incrementScan(userId, pet.id);
     sendEmail(pet);
     renderPet(pet);
-  }catch(e){console.error(e);showError();}
+  } catch(e) { console.error(e); showError(); }
 }
-function renderPet(pet){
-  document.title='ð¾ '+pet.name+' â PetNFC';
-  if(pet.lost)document.getElementById('pet-header').classList.add('lost');
-  if(pet.photo){document.getElementById('p-photo').src=pet.photo;document.getElementById('p-photo').style.display='block';document.getElementById('p-emoji-wrap').style.display='none';}
-  else{document.getElementById('p-emoji-wrap').textContent=pet.emoji||'ð¾';}
-  document.getElementById('p-name').textContent=pet.name;
-  document.getElementById('p-sub').textContent=[pet.species,pet.breed,pet.age].filter(Boolean).join(' Â· ')||'â';
-  if(pet.sex){const el=document.getElementById('p-sex');el.style.display='inline-block';el.textContent=pet.sex==='M'?'â Macho':'â FÃªmea';}
-  document.getElementById('banner-container').innerHTML=pet.lost
-    ?'<div class="lost-banner"><div class="icon">ð¨</div><div><strong>Pet Perdido!</strong><p>Este pet estÃ¡ desaparecido. Contate o dono urgente!</p></div></div>'
-    :'<div class="found-banner"><div class="icon">ð</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
-  const info=[pet.species&&{l:'EspÃ©cie',v:pet.species},pet.breed&&{l:'RaÃ§a',v:pet.breed},pet.age&&{l:'Idade',v:pet.age},pet.color&&{l:'Cor',v:pet.color}].filter(Boolean);
-  document.getElementById('info-grid').innerHTML=info.map(i=>'<div class="info-pill"><div class="lbl">'+i.l+'</div><div class="val">'+i.v+'</div></div>').join('');
-  if(pet.vaccines&&Object.keys(pet.vaccines).length){document.getElementById('vaccines-section').style.display='block';document.getElementById('vaccines-list').innerHTML=Object.entries(pet.vaccines).map(([k,v])=>'<div class="vac-item"><div class="vac-dot '+(v?'yes':'no')+'"></div>'+(vNames[k]||k)+'</div>').join('');}
-  if(pet.obs){document.getElementById('obs-box').style.display='block';document.getElementById('p-obs').textContent=pet.obs;}
-  const addr=[pet.street,pet.neighborhood,pet.city,pet.state,pet.cep].filter(Boolean);
-  if(addr.length){document.getElementById('address-box').style.display='flex';document.getElementById('p-address').textContent=addr.join(', ');}
-  const ph=(pet.phone||'').replace(/\D/g,''),wh=(pet.whatsapp||pet.phone||'').replace(/\D/g,'');
-  let c='';
-  if(pet.ownerName&&pet.phone){
-    c+='<a class="contact-btn" href="tel:+55'+ph+'"><div class="contact-icon call">ð</div><div class="contact-info"><div class="name">'+pet.ownerName+'</div><div class="phone">'+pet.phone+'</div></div><span class="contact-cta">Ligar</span></a>';
-    c+='<a class="contact-btn" href="https://wa.me/55'+wh+'?text='+encodeURIComponent('OlÃ¡! Encontrei seu pet '+pet.name+' ð¾')+'" target="_blank"><div class="contact-icon whats">ð¬</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">'+(pet.whatsapp||pet.phone)+'</div></div><span class="contact-cta">Chamar</span></a>';
+
+function renderPet(pet) {
+  document.title = pet.name + ' - PetNFC';
+  if (pet.lost) document.getElementById('pet-header').classList.add('lost');
+  if (pet.photo) {
+    document.getElementById('p-photo').src = pet.photo;
+    document.getElementById('p-photo').style.display = 'block';
+    document.getElementById('p-emoji-wrap').style.display = 'none';
+  } else {
+    document.getElementById('p-emoji-wrap').textContent = pet.emoji || '&#x1F43E;';
   }
-  if(pet.vetPhone){const vp=pet.vetPhone.replace(/\D/g,'');c+='<a class="contact-btn" href="tel:+55'+vp+'"><div class="contact-icon vet">ð¥</div><div class="contact-info"><div class="name">'+(pet.vetName||'VeterinÃ¡rio')+'</div><div class="phone">'+pet.vetPhone+'</div></div><span class="contact-cta">Ligar</span></a>';}
-  document.getElementById('contact-section').innerHTML='<h3>ð Contatos</h3>'+c;
-  document.getElementById('state-loading').style.display='none';
-  document.getElementById('state-pet').style.display='block';
+  document.getElementById('p-name').textContent = pet.name;
+  document.getElementById('p-sub').textContent = [pet.species, pet.breed, pet.age].filter(Boolean).join(' - ') || '-';
+  if (pet.sex) {
+    var el = document.getElementById('p-sex');
+    el.style.display = 'inline-block';
+    el.textContent = pet.sex === 'M' ? 'Macho' : 'Femea';
+  }
+  document.getElementById('banner-container').innerHTML = pet.lost
+    ? '<div class="lost-banner"><div class="icon">&#x1F6A8;</div><div><strong>Pet Perdido!</strong><p>Este pet esta desaparecido. Contate o dono urgente!</p></div></div>'
+    : '<div class="found-banner"><div class="icon">&#x1F514;</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
+  var info = [
+    pet.species && { l:'Especie', v:pet.species },
+    pet.breed && { l:'Raca', v:pet.breed },
+    pet.age && { l:'Idade', v:pet.age },
+    pet.color && { l:'Cor', v:pet.color }
+  ].filter(Boolean);
+  document.getElementById('info-grid').innerHTML = info.map(function(i) {
+    return '<div class="info-pill"><div class="lbl">' + i.l + '</div><div class="val">' + i.v + '</div></div>';
+  }).join('');
+  if (pet.vaccines && Object.keys(pet.vaccines).length) {
+    document.getElementById('vaccines-section').style.display = 'block';
+    document.getElementById('vaccines-list').innerHTML = Object.entries(pet.vaccines).map(function(e) {
+      return '<div class="vac-item"><div class="vac-dot ' + (e[1] ? 'yes' : 'no') + '"></div>' + (vNames[e[0]] || e[0]) + '</div>';
+    }).join('');
+  }
+  if (pet.obs) {
+    document.getElementById('obs-box').style.display = 'block';
+    document.getElementById('p-obs').textContent = pet.obs;
+  }
+  var addr = [pet.street, pet.neighborhood, pet.city, pet.state, pet.cep].filter(Boolean);
+  if (addr.length) {
+    document.getElementById('address-box').style.display = 'flex';
+    document.getElementById('p-address').textContent = addr.join(', ');
+  }
+  var phone = (pet.phone || '').replace(/D/g, '');
+  var whats = (pet.whatsapp || pet.phone || '').replace(/D/g, '');
+  var c = '';
+  if (pet.ownerName && pet.phone) {
+    c += '<a class="contact-btn" href="tel:+55' + phone + '"><div class="contact-icon call">&#x1F4DE;</div><div class="contact-info"><div class="name">' + pet.ownerName + '</div><div class="phone">' + pet.phone + '</div></div><span class="contact-cta">Ligar</span></a>';
+    c += '<a class="contact-btn" href="https://wa.me/55' + whats + '?text=' + encodeURIComponent('Ola! Encontrei seu pet ' + pet.name) + '" target="_blank"><div class="contact-icon whats">&#x1F4AC;</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">' + (pet.whatsapp || pet.phone) + '</div></div><span class="contact-cta">Chamar</span></a>';
+  }
+  if (pet.vetPhone) {
+    var vp = pet.vetPhone.replace(/D/g, '');
+    c += '<a class="contact-btn" href="tel:+55' + vp + '"><div class="contact-icon vet">&#x1F3E5;</div><div class="contact-info"><div class="name">' + (pet.vetName || 'Veterinario') + '</div><div class="phone">' + pet.vetPhone + '</div></div><span class="contact-cta">Ligar</span></a>';
+  }
+  document.getElementById('contact-section').innerHTML = '<h3>Contatos</h3>' + c;
+  document.getElementById('state-loading').style.display = 'none';
+  document.getElementById('state-pet').style.display = 'block';
 }
+
 init();
 </script>
 </body>
