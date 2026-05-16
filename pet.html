@@ -56,8 +56,8 @@
     .address-box .addr-content p{font-size:14px;font-weight:600;line-height:1.5}
     .contact-section{margin-bottom:1.5rem}
     .contact-section h3{font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
-    .contact-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--black);margin-bottom:8px;transition:box-shadow .15s,transform .1s}
-    .contact-btn:hover{box-shadow:0 4px 16px rgba(255,131,32,0.15);transform:translateY(-1px);border-color:var(--orange)}
+    .contact-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;text-decoration:none;color:var(--black);margin-bottom:8px}
+    .contact-btn:hover{box-shadow:0 4px 16px rgba(255,131,32,0.15);border-color:var(--orange)}
     .contact-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
     .contact-icon.call{background:rgba(255,131,32,0.12)}
     .contact-icon.whats{background:rgba(0,199,178,0.12)}
@@ -88,7 +88,7 @@
   <div class="pet-page">
     <div id="banner-container"></div>
     <div class="info-grid" id="info-grid"></div>
-    <div class="vaccines-section" id="vaccines-section" style="display:none">
+    <div class="vaccines-section" id="vaccines-section">
       <div class="lbl">Vacinas</div>
       <div class="vaccines-list" id="vaccines-list"></div>
     </div>
@@ -104,7 +104,7 @@
       </div>
     </div>
     <div class="contact-section" id="contact-section"></div>
-    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> - Identifique seu pet com NFC &amp; QR Code</p></div>
+    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> - Identifique seu pet com NFC e QR Code</p></div>
   </div>
 </div>
 <script type="module">
@@ -114,26 +114,40 @@ const EJS_KEY = 'wMKdLso1I33GtEACr';
 const EJS_SVC = 'service_9m9t14l';
 const EJS_TPL = 'template_s8de3rq';
 
-// Lista OFICIAL de vacinas â somente essas 9, nessa ordem
 const VACINAS = [
-  { key: 'castrado',     label: 'Castrado'     },
-  { key: 'raiva',        label: 'Raiva'         },
-  { key: 'gripe',        label: 'Gripe'         },
-  { key: 'giardia',      label: 'Giardia'       },
-  { key: 'v3v4v5',       label: 'V3/V4/V5'      },
-  { key: 'v8v10',        label: 'V8/V10'        },
-  { key: 'leishmaniose', label: 'Leishmaniose'  },
-  { key: 'desparasitado',label: 'Desparasitado' },
-  { key: 'vermifugado',  label: 'Vermifugado'   }
+  { key: 'castrado',      label: 'Castrado'      },
+  { key: 'raiva',         label: 'Raiva'          },
+  { key: 'gripe',         label: 'Gripe'          },
+  { key: 'giardia',       label: 'Giardia'        },
+  { key: 'v3v4v5',        label: 'V3/V4/V5'       },
+  { key: 'v8v10',         label: 'V8/V10'         },
+  { key: 'leishmaniose',  label: 'Leishmaniose'   },
+  { key: 'desparasitado', label: 'Desparasitado'  },
+  { key: 'vermifugado',   label: 'Vermifugado'    }
 ];
 
+// sendEmail recebe o pet completo e calcula maps_url internamente
 async function sendEmail(pet) {
   try {
     emailjs.init(EJS_KEY);
-    var t = new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
-    await emailjs.send(EJS_SVC, EJS_TPL, { pet_name: pet.name, owner_name: pet.ownerName || 'Dono', scan_time: t, name: pet.ownerName || 'Dono', email: 'yuripimenta12@gmail.com', pet_url: location.href,
-        maps_url: addr.length ? 'https://www.google.com/maps/search/' + encodeURIComponent(addr.join(', ')) : 'Endereco nao informado' });
-  } catch(e) { console.warn('[EmailJS]', e); }
+    var addr = [pet.street, pet.neighborhood, pet.city, pet.state, pet.cep].filter(Boolean);
+    var mapsUrl = addr.length
+      ? 'https://www.google.com/maps/search/' + encodeURIComponent(addr.join(', '))
+      : 'Endereco nao informado';
+    var t = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    var result = await emailjs.send(EJS_SVC, EJS_TPL, {
+      pet_name:   pet.name,
+      owner_name: pet.ownerName || 'Dono',
+      scan_time:  t,
+      name:       pet.ownerName || 'Dono',
+      email:      'yuripimenta12@gmail.com',
+      pet_url:    location.href,
+      maps_url:   mapsUrl
+    });
+    console.log('[EmailJS] enviado:', result.status, result.text);
+  } catch(e) {
+    console.warn('[EmailJS] erro:', e);
+  }
 }
 
 function showError() {
@@ -143,16 +157,20 @@ function showError() {
 
 async function init() {
   var parts = location.pathname.split('/');
-  var slug = parts[parts.length - 1] || new URLSearchParams(location.search).get('slug');
+  var slug = parts[parts.length - 1];
   if (!slug || slug === 'pet') { showError(); return; }
   try {
     var pet = await getPetBySlug(slug);
     if (!pet) { showError(); return; }
     var userId = slug.split('_')[0];
+    // Incrementar scan e enviar email — passando o pet completo
     incrementScan(userId, pet.id);
     sendEmail(pet);
     renderPet(pet);
-  } catch(e) { console.error(e); showError(); }
+  } catch(e) {
+    console.error('[init]', e);
+    showError();
+  }
 }
 
 function renderPet(pet) {
@@ -162,8 +180,8 @@ function renderPet(pet) {
     document.getElementById('p-photo').src = pet.photo;
     document.getElementById('p-photo').style.display = 'block';
     document.getElementById('p-emoji-wrap').style.display = 'none';
-  } else {
-    document.getElementById('p-emoji-wrap').textContent = pet.emoji || '&#x1F43E;';
+  } else if (pet.emoji) {
+    document.getElementById('p-emoji-wrap').textContent = pet.emoji;
   }
   document.getElementById('p-name').textContent = pet.name;
   document.getElementById('p-sub').textContent = [pet.species, pet.breed, pet.age].filter(Boolean).join(' - ') || '-';
@@ -176,23 +194,19 @@ function renderPet(pet) {
     ? '<div class="lost-banner"><div class="icon">&#x1F6A8;</div><div><strong>Pet Perdido!</strong><p>Este pet esta desaparecido. Contate o dono urgente!</p></div></div>'
     : '<div class="found-banner"><div class="icon">&#x1F514;</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
   var info = [
-    pet.species && { l:'Especie', v:pet.species },
-    pet.breed   && { l:'Raca',    v:pet.breed   },
-    pet.age     && { l:'Idade',   v:pet.age     },
-    pet.color   && { l:'Cor',     v:pet.color   }
+    pet.species && { l: 'Especie', v: pet.species },
+    pet.breed   && { l: 'Raca',    v: pet.breed   },
+    pet.age     && { l: 'Idade',   v: pet.age     },
+    pet.color   && { l: 'Cor',     v: pet.color   }
   ].filter(Boolean);
   document.getElementById('info-grid').innerHTML = info.map(function(i) {
     return '<div class="info-pill"><div class="lbl">' + i.l + '</div><div class="val">' + i.v + '</div></div>';
   }).join('');
-
-  // Mostrar APENAS as 9 vacinas oficiais, na ordem correta, ignorar qualquer outra
-  var vacsHtml = VACINAS.map(function(v) {
+  // Vacinas — sempre mostra as 9, marcadas ou nao
+  document.getElementById('vaccines-list').innerHTML = VACINAS.map(function(v) {
     var marcada = pet.vaccines && pet.vaccines[v.key] === true;
     return '<div class="vac-item"><div class="vac-dot ' + (marcada ? 'yes' : 'no') + '"></div>' + v.label + '</div>';
   }).join('');
-  document.getElementById('vaccines-section').style.display = 'block';
-  document.getElementById('vaccines-list').innerHTML = vacsHtml;
-
   if (pet.obs) {
     document.getElementById('obs-box').style.display = 'block';
     document.getElementById('p-obs').textContent = pet.obs;
@@ -201,7 +215,9 @@ function renderPet(pet) {
   if (addr.length) {
     document.getElementById('address-box').style.display = 'flex';
     var mapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(addr.join(', '));
-    document.getElementById('p-address').innerHTML = '<a href="' + mapsUrl + '" target="_blank" style="color:var(--orange);font-weight:700;text-decoration:none;">' + addr.join(', ') + ' &#x1F4CD;</a>';
+    document.getElementById('p-address').innerHTML =
+      '<a href="' + mapsUrl + '" target="_blank" style="color:var(--orange);font-weight:700;text-decoration:none;">'
+      + addr.join(', ') + ' &#x1F4CD;</a>';
   }
   var phone = (pet.phone || '').replace(/\D/g, '');
   var whats = (pet.whatsapp || pet.phone || '').replace(/\D/g, '');
