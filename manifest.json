@@ -1,11 +1,11 @@
 {
-  "name": "PetNFC — Tag para Pets",
+  "name": "PetNFC - Tag para Pets",
   "short_name": "PetNFC",
-  "description": "Tag NFC & QR Code inteligente para identificacao de pets",
+  "description": "Tag NFC e QR Code para identificacao de pets",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F7F5F0",
-  "theme_color": "#2D6A4F",
+  "background_color": "#FFF4E0",
+  "theme_color": "#FF8320",
   "orientation": "portrait-primary",
   "lang": "pt-BR",
   "icons": [
