@@ -1,396 +1,438 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PetTag - Painel do Dono</title>
-  <link rel="manifest" href="/manifest.json" /><meta name="theme-color" content="#FF8320" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF8320">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    :root{--bg:#FFF4E0;--surface:#FFFFFF;--border:#F0D9B5;--text:#000;--muted:#414141;--accent:#FF8320;--accent-dark:#E06E10;--teal:#00C7B2;--danger:#C1343A;--radius:14px;--shadow:0 2px 16px rgba(255,131,32,.10);}
-    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-    h1,h2,h3{font-family:'Sora',sans-serif;}
-    #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
-    .auth-card{background:var(--surface);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--shadow);border:1.5px solid var(--border);}
-    .logo{text-align:center;margin-bottom:2rem;} .logo img{height:70px;object-fit:contain;} .logo p{font-size:14px;color:var(--muted);margin-top:4px;}
-    .auth-tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:1.5rem;}
-    .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif;}
-    .auth-tab.active{background:var(--accent);color:white;}
-    .field{margin-bottom:1rem;} .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;}
-    .field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);}
-    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);}
-    .field textarea{resize:none;min-height:80px;}
-    .btn-full{width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .btn-full:hover{background:var(--accent-dark);}
-    #auth-error{font-size:13px;text-align:center;margin-top:8px;min-height:18px;}
-    .forgot-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--accent);font-weight:600;cursor:pointer;}
-    #app-screen{display:none;}
-    .topbar{background:var(--accent);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;}
-    .topbar-logo img{height:38px;object-fit:contain;filter:brightness(0) invert(1);}
-    .btn-logout{padding:6px 16px;border:2px solid rgba(255,255,255,.6);border-radius:8px;background:transparent;font-size:13px;font-weight:700;cursor:pointer;color:white;font-family:'Nunito',sans-serif;}
-    .main{max-width:900px;margin:0 auto;padding:2rem 1rem;}
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;} .section-header h2{font-size:20px;}
-    .btn-add{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    #pets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
-    .pet-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.25rem;cursor:pointer;transition:box-shadow .15s,transform .1s;position:relative;}
-    .pet-card:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
-    .pet-card.lost{border-color:var(--danger);background:#FFF5F5;}
-    .pet-card-avatar{font-size:40px;margin-bottom:10px;} .pet-card-photo{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:2px solid var(--border);}
-    .pet-card-name{font-size:18px;font-weight:700;font-family:'Sora',sans-serif;} .pet-card-sub{font-size:13px;color:var(--muted);margin-top:2px;}
-    .pet-card-tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,131,32,.12);color:var(--accent);}
-    .pet-card-tag.lost{background:#FDECEA;color:var(--danger);}
-    .pet-card-scans{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 8px;color:var(--muted);}
-    .pet-card-scans.has-scans{background:rgba(0,199,178,.12);border-color:var(--teal);color:#00A898;}
-    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);} .empty-state .icon{font-size:56px;margin-bottom:1rem;}
-    .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem;}
-    .drawer-overlay.open{display:flex;}
-    .drawer{background:var(--surface);border-radius:20px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:2rem;}
-    .drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;} .drawer-header h2{font-size:20px;}
-    .btn-close{width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;font-size:18px;cursor:pointer;}
-    .form-section-title{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem;border-bottom:2px solid rgba(255,131,32,.2);padding-bottom:6px;}
-    .emoji-picker{display:flex;gap:8px;flex-wrap:wrap;}
-    .emoji-opt{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:2.5px solid transparent;background:var(--bg);}
-    .emoji-opt.selected{border-color:var(--accent);background:rgba(255,131,32,.1);}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .sex-toggle{display:flex;gap:10px;}
-    .sex-btn{flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .sex-btn.active-male{border-color:#4A90D9;background:#EBF4FF;color:#4A90D9;}
-    .sex-btn.active-female{border-color:#E87C9A;background:#FFF0F5;color:#E87C9A;}
-    .vaccines-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-    .vaccine-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg);}
-    .vaccine-item.checked{border-color:var(--accent);background:rgba(255,131,32,.08);}
-    .vaccine-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .vaccine-item.checked .vaccine-dot{background:var(--accent);border-color:var(--accent);}
-    .vaccine-item.checked .vaccine-dot::after{content:'ok';color:white;font-size:9px;font-weight:700;}
-    .vaccine-label{font-size:13px;font-weight:600;}
-    .photo-upload{display:flex;align-items:center;gap:12px;}
-    .photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:none;}
-    .photo-placeholder{width:72px;height:72px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
-    .btn-photo{padding:8px 16px;border:2px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .lost-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;border:2px solid var(--border);background:var(--bg);margin-bottom:.5rem;cursor:pointer;}
-    .lost-toggle.active{border-color:var(--danger);background:#FFF5F5;}
-    .lost-toggle-label{display:flex;align-items:center;gap:10px;}
-    .lost-toggle-label .icon{font-size:22px;} .lost-toggle-label .txt strong{display:block;font-size:14px;font-weight:700;}
-    .lost-toggle-label .txt span{display:block;font-size:12px;color:var(--muted);}
-    .toggle-switch{width:48px;height:26px;background:var(--border);border-radius:30px;position:relative;flex-shrink:0;}
-    .toggle-switch.on{background:var(--danger);}
-    .toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:white;border-radius:50%;top:3px;left:3px;transition:left .2s;}
-    .toggle-switch.on::after{left:25px;}
-    .analytics-box{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:1.5rem;margin-bottom:1rem;}
-    .analytics-item .num{font-size:24px;font-weight:800;font-family:'Sora',sans-serif;color:var(--accent);}
-    .analytics-item .lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;}
-    .drawer-footer{display:flex;gap:10px;margin-top:1.5rem;}
-    .btn-save{flex:2;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .btn-delete{flex:1;padding:13px;background:transparent;border:2px solid var(--danger);color:var(--danger);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .btn-qr-teal{padding:13px 16px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    #qr-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem;}
-    #qr-modal.open{display:flex;}
-    .qr-card{background:var(--surface);border-radius:20px;padding:2rem;max-width:360px;width:100%;text-align:center;}
-    #qr-container{display:flex;justify-content:center;margin-bottom:1rem;}
-    .qr-url{font-family:monospace;font-size:12px;color:var(--muted);background:var(--bg);padding:8px 12px;border-radius:8px;word-break:break-all;margin-bottom:1rem;}
-    .qr-buttons{display:flex;gap:8px;}
-    .btn-qr-download{flex:1;padding:10px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .btn-qr-close{flex:1;padding:10px;background:transparent;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#000;color:white;padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
-    .toast.show{opacity:1;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#FFF4E0;--surface:#fff;--border:#F0D9B5;--text:#000;--muted:#414141;--accent:#FF8320;--adark:#E06E10;--teal:#00C7B2;--danger:#C1343A;--r:14px;--sh:0 2px 16px rgba(255,131,32,.10)}
+    body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    h1,h2,h3{font-family:'Sora',sans-serif}
+    #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .auth-card{background:var(--surface);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;box-shadow:var(--sh);border:1.5px solid var(--border)}
+    .logo{text-align:center;margin-bottom:2rem}
+    .logo img{height:70px;object-fit:contain}
+    .logo p{font-size:14px;color:var(--muted);margin-top:4px}
+    .auth-tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:1.5rem}
+    .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif}
+    .auth-tab.active{background:var(--accent);color:#fff}
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+    .field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text)}
+    .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+    .field textarea{resize:none;min-height:80px}
+    .btn-full{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .btn-full:hover{background:var(--adark)}
+    #auth-error{font-size:13px;text-align:center;margin-top:8px;min-height:18px;color:var(--danger)}
+    .forgot-link{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--accent);font-weight:600;cursor:pointer}
+    #app-screen{display:none}
+    .topbar{background:var(--accent);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+    .topbar-logo img{height:38px;object-fit:contain;filter:brightness(0) invert(1)}
+    .btn-logout{padding:6px 16px;border:2px solid rgba(255,255,255,.6);border-radius:8px;background:transparent;font-size:13px;font-weight:700;cursor:pointer;color:#fff;font-family:'Nunito',sans-serif}
+    .main{max-width:900px;margin:0 auto;padding:2rem 1rem}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .section-header h2{font-size:20px}
+    .btn-add{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    #pets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+    .pet-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:box-shadow .15s,transform .1s;position:relative}
+    .pet-card:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+    .pet-card.lost{border-color:var(--danger);background:#FFF5F5}
+    .pet-card-avatar{font-size:40px;margin-bottom:10px}
+    .pet-card-photo{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:2px solid var(--border)}
+    .pet-card-name{font-size:18px;font-weight:700;font-family:'Sora',sans-serif}
+    .pet-card-sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .pet-card-tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,131,32,.12);color:var(--accent)}
+    .pet-card-tag.lost{background:#FDECEA;color:var(--danger)}
+    .pet-card-scans{position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 8px;color:var(--muted)}
+    .pet-card-scans.has-scans{background:rgba(0,199,178,.12);border-color:var(--teal);color:#00A898}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+    .empty-state .icon{font-size:56px;margin-bottom:1rem}
+    .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:1rem}
+    .drawer-overlay.open{display:flex}
+    .drawer{background:var(--surface);border-radius:20px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:2rem}
+    .drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .drawer-header h2{font-size:20px}
+    .btn-close{width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;font-size:18px;cursor:pointer}
+    .fsec{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem;border-bottom:2px solid rgba(255,131,32,.2);padding-bottom:6px}
+    .emoji-picker{display:flex;gap:8px;flex-wrap:wrap}
+    .emoji-opt{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:2.5px solid transparent;background:var(--bg)}
+    .emoji-opt.selected{border-color:var(--accent);background:rgba(255,131,32,.1)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sex-toggle{display:flex;gap:10px}
+    .sex-btn{flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;background:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .sex-btn.am{border-color:#4A90D9;background:#EBF4FF;color:#4A90D9}
+    .sex-btn.af{border-color:#E87C9A;background:#FFF0F5;color:#E87C9A}
+    .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .vi{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--bg)}
+    .vi.checked{border-color:var(--accent);background:rgba(255,131,32,.08)}
+    .vdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
+    .vi.checked .vdot{background:var(--accent);border-color:var(--accent)}
+    .vlab{font-size:13px;font-weight:600}
+    .photo-upload{display:flex;align-items:center;gap:12px}
+    .photo-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:none}
+    .photo-ph{width:72px;height:72px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .btn-photo{padding:8px 16px;border:2px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .lt{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;border:2px solid var(--border);background:var(--bg);margin-bottom:.5rem;cursor:pointer}
+    .lt.active{border-color:var(--danger);background:#FFF5F5}
+    .lt-label{display:flex;align-items:center;gap:10px}
+    .lt-label .icon{font-size:22px}
+    .lt-label .txt strong{display:block;font-size:14px;font-weight:700}
+    .lt-label .txt span{display:block;font-size:12px;color:var(--muted)}
+    .tswitch{width:48px;height:26px;background:var(--border);border-radius:30px;position:relative;flex-shrink:0}
+    .tswitch.on{background:var(--danger)}
+    .tswitch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
+    .tswitch.on::after{left:25px}
+    .abox{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:1rem;display:flex;gap:1.5rem;margin-bottom:1rem}
+    .aitem .num{font-size:24px;font-weight:800;font-family:'Sora',sans-serif;color:var(--accent)}
+    .aitem .lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase}
+    .dfooter{display:flex;gap:10px;margin-top:1.5rem}
+    .btn-save{flex:2;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .btn-save:hover{background:var(--adark)}
+    .btn-del{flex:1;padding:13px;background:transparent;border:2px solid var(--danger);color:var(--danger);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .btn-qrt{padding:13px 16px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    #qrm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem}
+    #qrm.open{display:flex}
+    .qrc{background:var(--surface);border-radius:20px;padding:2rem;max-width:360px;width:100%;text-align:center}
+    #qr-box{display:flex;justify-content:center;margin-bottom:1rem}
+    .qr-url{font-family:monospace;font-size:12px;color:var(--muted);background:var(--bg);padding:8px 12px;border-radius:8px;word-break:break-all;margin-bottom:1rem}
+    .qr-btns{display:flex;gap:8px}
+    .btn-qrdl{flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+    .btn-qrcl{flex:1;padding:10px;background:transparent;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1}
   </style>
 </head>
 <body>
 <div id="auth-screen">
   <div class="auth-card">
     <div class="logo">
-      <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet" />
+      <img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet">
       <p>Tag NFC &amp; QR Code para seu pet</p>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="authMode('login')">Entrar</button>
-      <button class="auth-tab" onclick="authMode('register')">Criar conta</button>
+      <button class="auth-tab active" id="tab-login" onclick="setTab('login')">Entrar</button>
+      <button class="auth-tab" id="tab-register" onclick="setTab('register')">Criar conta</button>
     </div>
-    <div class="field"><label>E-mail</label><input type="email" id="auth-email" placeholder="seu@email.com" /></div>
-    <div class="field"><label>Senha</label><input type="password" id="auth-pass" placeholder="Sua senha" /></div>
-    <button class="btn-full" id="auth-btn" onclick="doAuth()">Entrar</button>
-    <p id="auth-error" style="color:var(--danger)"></p>
-    <a class="forgot-link" id="forgot-link" onclick="doForgotPassword()">Esqueci minha senha</a>
+    <div class="field"><label>E-mail</label><input type="email" id="auth-email" placeholder="seu@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="auth-pass" placeholder="Sua senha"></div>
+    <button class="btn-full" onclick="doAuth()">Entrar</button>
+    <p id="auth-error"></p>
+    <a class="forgot-link" id="forgot-link" onclick="doForgot()">Esqueci minha senha</a>
   </div>
 </div>
 <div id="app-screen">
   <nav class="topbar">
-    <div class="topbar-logo"><img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet" /></div>
+    <div class="topbar-logo"><img src="https://raw.githubusercontent.com/yuripimenta12-eng/petnfc/main/tag4pet%20PSD%20copiarweb.webp" alt="TagPet"></div>
     <button class="btn-logout" onclick="doLogout()">Sair</button>
   </nav>
   <main class="main">
     <div class="section-header"><h2>Meus Pets</h2><button class="btn-add" onclick="openDrawer()">+ Adicionar pet</button></div>
-    <div id="pets-grid"><div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado ainda.</p></div></div>
+    <div id="pets-grid"><div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div></div>
   </main>
 </div>
-<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerOnBg(event)">
+<div class="drawer-overlay" id="drawer-overlay" onclick="bgClose(event)">
   <div class="drawer">
-    <div class="drawer-header"><h2 id="drawer-title">Novo Pet</h2><button class="btn-close" onclick="closeDrawer()">X</button></div>
-    <div class="analytics-box" id="analytics-box" style="display:none">
-      <div class="analytics-item"><div class="num" id="analytics-scans">0</div><div class="lbl">Scans</div></div>
-      <div class="analytics-item"><div class="num" id="analytics-last">-</div><div class="lbl">Ultimo scan</div></div>
+    <div class="drawer-header"><h2 id="dtitle">Novo Pet</h2><button class="btn-close" onclick="closeDrawer()">X</button></div>
+    <div class="abox" id="abox" style="display:none">
+      <div class="aitem"><div class="num" id="a-scans">0</div><div class="lbl">Scans</div></div>
+      <div class="aitem"><div class="num" id="a-last">-</div><div class="lbl">Ultimo scan</div></div>
     </div>
-    <div class="form-section-title" id="lost-section" style="display:none">Status do Pet</div>
-    <div class="lost-toggle" id="lost-toggle" style="display:none" onclick="toggleLost()">
-      <div class="lost-toggle-label"><div class="icon">&#x1F6A8;</div><div class="txt"><strong id="lost-label">Pet esta em casa</strong><span id="lost-sub">Ative se o pet estiver perdido</span></div></div>
-      <div class="toggle-switch" id="lost-switch"></div>
+    <div class="fsec" id="lst-sec" style="display:none">Status</div>
+    <div class="lt" id="lst-tog" style="display:none" onclick="togLost()">
+      <div class="lt-label"><div class="icon">&#x1F6A8;</div><div class="txt"><strong id="lst-lbl">Pet esta em casa</strong><span id="lst-sub">Ative se perdido</span></div></div>
+      <div class="tswitch" id="lst-sw"></div>
     </div>
-    <div class="form-section-title">Foto</div>
+    <div class="fsec">Foto</div>
     <div class="photo-upload">
-      <div class="photo-placeholder" id="photo-placeholder">&#x1F4F7;</div>
-      <img class="photo-preview" id="photo-preview" src="" alt="foto" />
+      <div class="photo-ph" id="photo-ph">&#x1F4F7;</div>
+      <img class="photo-preview" id="photo-prev" src="" alt="">
       <div>
-        <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhoto(this)" />
-        <button class="btn-photo" onclick="document.getElementById('photo-input').click()">Escolher foto</button>
-        <p style="font-size:12px;color:var(--muted);margin-top:6px">JPG ou PNG, ate 2MB</p>
+        <input type="file" id="photo-inp" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+        <button class="btn-photo" onclick="document.getElementById('photo-inp').click()">Escolher foto</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">JPG/PNG ate 2MB</p>
       </div>
     </div>
-    <div class="form-section-title">Icone do Animal</div>
-    <div class="emoji-picker" id="emoji-picker">
-      <div class="emoji-opt selected" data-emoji="&#x1F436;" onclick="selectEmoji(this)">&#x1F436;</div>
-      <div class="emoji-opt" data-emoji="&#x1F431;" onclick="selectEmoji(this)">&#x1F431;</div>
-      <div class="emoji-opt" data-emoji="&#x1F430;" onclick="selectEmoji(this)">&#x1F430;</div>
-      <div class="emoji-opt" data-emoji="&#x1F434;" onclick="selectEmoji(this)">&#x1F434;</div>
-      <div class="emoji-opt" data-emoji="&#x1F437;" onclick="selectEmoji(this)">&#x1F437;</div>
-      <div class="emoji-opt" data-emoji="&#x1F99C;" onclick="selectEmoji(this)">&#x1F99C;</div>
+    <div class="fsec">Icone</div>
+    <div class="emoji-picker" id="ep">
+      <div class="emoji-opt selected" data-e="&#x1F436;" onclick="pickEmoji(this)">&#x1F436;</div>
+      <div class="emoji-opt" data-e="&#x1F431;" onclick="pickEmoji(this)">&#x1F431;</div>
+      <div class="emoji-opt" data-e="&#x1F430;" onclick="pickEmoji(this)">&#x1F430;</div>
+      <div class="emoji-opt" data-e="&#x1F434;" onclick="pickEmoji(this)">&#x1F434;</div>
+      <div class="emoji-opt" data-e="&#x1F437;" onclick="pickEmoji(this)">&#x1F437;</div>
+      <div class="emoji-opt" data-e="&#x1F99C;" onclick="pickEmoji(this)">&#x1F99C;</div>
     </div>
-    <div class="form-section-title">Dados do Pet</div>
-    <div class="field"><label>Nome *</label><input type="text" id="f-name" placeholder="Ex: Thor" /></div>
+    <div class="fsec">Dados</div>
+    <div class="field"><label>Nome *</label><input type="text" id="f-name" placeholder="Ex: Thor"></div>
     <div class="form-row">
       <div class="field"><label>Especie</label>
         <select id="f-species"><option>Cachorro</option><option>Gato</option><option>Coelho</option><option>Cavalo</option><option>Porco</option><option>Arara</option></select>
       </div>
-      <div class="field"><label>Raca</label><input type="text" id="f-breed" placeholder="Ex: Labrador" /></div>
+      <div class="field"><label>Raca</label><input type="text" id="f-breed" placeholder="Ex: Labrador"></div>
     </div>
     <div class="form-row">
-      <div class="field"><label>Idade</label><input type="text" id="f-age" placeholder="Ex: 3 anos" /></div>
-      <div class="field"><label>Cor</label><input type="text" id="f-color" placeholder="Ex: Caramelo" /></div>
+      <div class="field"><label>Idade</label><input type="text" id="f-age" placeholder="Ex: 3 anos"></div>
+      <div class="field"><label>Cor</label><input type="text" id="f-color" placeholder="Ex: Caramelo"></div>
     </div>
     <div class="field"><label>Sexo</label>
       <div class="sex-toggle">
-        <button class="sex-btn" id="btn-male" onclick="setSex('M')">Macho</button>
-        <button class="sex-btn" id="btn-female" onclick="setSex('F')">Femea</button>
+        <button class="sex-btn" id="bm" onclick="setSex('M')">Macho</button>
+        <button class="sex-btn" id="bf" onclick="setSex('F')">Femea</button>
       </div>
     </div>
     <div class="field"><label>Observacoes</label><textarea id="f-obs" placeholder="Ex: Tem medo de trovao..."></textarea></div>
-    <div class="form-section-title">Vacinas e Saude</div>
-    <div class="vaccines-grid">
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="raiva"><div class="vaccine-dot"></div><span class="vaccine-label">Raiva</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="v8v10"><div class="vaccine-dot"></div><span class="vaccine-label">V8/V10</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="gripe"><div class="vaccine-dot"></div><span class="vaccine-label">Gripe (Bordetella)</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="giardia"><div class="vaccine-dot"></div><span class="vaccine-label">Giardia</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="v3v4v5"><div class="vaccine-dot"></div><span class="vaccine-label">V3, V4 ou V5</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="leishmaniose"><div class="vaccine-dot"></div><span class="vaccine-label">Leishmaniose</span></div>
-      <div class="vaccine-item" onclick="toggleVaccine(this)" data-v="desparasitado"><div class="vaccine-dot"></div><span class="vaccine-label">Desparasitado</span></div>
+    <div class="fsec">Vacinas</div>
+    <div class="vgrid">
+      <div class="vi" onclick="togV(this)" data-v="raiva"><div class="vdot"></div><span class="vlab">Raiva</span></div>
+      <div class="vi" onclick="togV(this)" data-v="v8v10"><div class="vdot"></div><span class="vlab">V8/V10</span></div>
+      <div class="vi" onclick="togV(this)" data-v="gripe"><div class="vdot"></div><span class="vlab">Gripe</span></div>
+      <div class="vi" onclick="togV(this)" data-v="giardia"><div class="vdot"></div><span class="vlab">Giardia</span></div>
+      <div class="vi" onclick="togV(this)" data-v="v3v4v5"><div class="vdot"></div><span class="vlab">V3, V4 ou V5</span></div>
+      <div class="vi" onclick="togV(this)" data-v="leishmaniose"><div class="vdot"></div><span class="vlab">Leishmaniose</span></div>
+      <div class="vi" onclick="togV(this)" data-v="desparasitado"><div class="vdot"></div><span class="vlab">Desparasitado</span></div>
     </div>
-    <div class="form-section-title">Contatos do Dono</div>
+    <div class="fsec">Contato</div>
     <div class="form-row">
-      <div class="field"><label>Nome do dono *</label><input type="text" id="f-owner" placeholder="Seu nome" /></div>
-      <div class="field"><label>Telefone *</label><input type="tel" id="f-phone" placeholder="(11) 99999-9999" /></div>
+      <div class="field"><label>Nome *</label><input type="text" id="f-owner" placeholder="Seu nome"></div>
+      <div class="field"><label>Telefone *</label><input type="tel" id="f-phone" placeholder="(11) 99999-9999"></div>
     </div>
-    <div class="field"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(11) 99999-9999" /></div>
-    <div class="field"><label>Veterinario</label><input type="tel" id="f-vet" placeholder="(11) 3333-3333" /></div>
-    <div class="field"><label>Nome da clinica</label><input type="text" id="f-vet-name" placeholder="Dr. Fulano" /></div>
-    <div class="form-section-title">Endereco do Dono</div>
-    <div class="field"><label>Rua / Avenida</label><input type="text" id="f-street" placeholder="Ex: Rua das Flores, 123" /></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="f-whatsapp" placeholder="(11) 99999-9999"></div>
+    <div class="field"><label>Veterinario</label><input type="tel" id="f-vet" placeholder="(11) 3333-3333"></div>
+    <div class="field"><label>Clinica/Vet nome</label><input type="text" id="f-vetname" placeholder="Dr. Fulano"></div>
+    <div class="fsec">Endereco</div>
+    <div class="field"><label>Rua</label><input type="text" id="f-street" placeholder="Rua das Flores, 123"></div>
     <div class="form-row">
-      <div class="field"><label>Bairro</label><input type="text" id="f-neighborhood" placeholder="Ex: Centro" /></div>
-      <div class="field"><label>Cidade</label><input type="text" id="f-city" placeholder="Ex: Sao Paulo" /></div>
+      <div class="field"><label>Bairro</label><input type="text" id="f-neigh" placeholder="Centro"></div>
+      <div class="field"><label>Cidade</label><input type="text" id="f-city" placeholder="Sao Paulo"></div>
     </div>
     <div class="form-row">
-      <div class="field"><label>Estado</label><input type="text" id="f-state" placeholder="Ex: SP" /></div>
-      <div class="field"><label>CEP</label><input type="text" id="f-cep" placeholder="00000-000" /></div>
+      <div class="field"><label>Estado</label><input type="text" id="f-state" placeholder="SP"></div>
+      <div class="field"><label>CEP</label><input type="text" id="f-cep" placeholder="00000-000"></div>
     </div>
-    <div class="drawer-footer">
-      <button class="btn-save" onclick="savePetForm()">Salvar</button>
-      <button class="btn-delete" id="btn-delete" onclick="deletePetForm()" style="display:none">Excluir</button>
-      <button class="btn-qr-teal" id="btn-qr" onclick="showQR()" style="display:none">QR Code</button>
+    <div class="dfooter">
+      <button class="btn-save" onclick="savePet()">Salvar</button>
+      <button class="btn-del" id="btn-del" onclick="delPet()" style="display:none">Excluir</button>
+      <button class="btn-qrt" id="btn-qr" onclick="showQR()" style="display:none">QR Code</button>
     </div>
   </div>
 </div>
-<div id="qr-modal">
-  <div class="qr-card">
-    <h3 id="qr-pet-name" style="margin-bottom:6px">QR Code</h3>
+<div id="qrm">
+  <div class="qrc">
+    <h3 id="qr-title" style="margin-bottom:6px">QR Code</h3>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Imprima na tag do seu pet.</p>
-    <div id="qr-container"></div>
-    <div class="qr-url" id="qr-url-text"></div>
-    <div class="qr-buttons">
-      <button class="btn-qr-download" onclick="downloadQR()">Baixar</button>
-      <button class="btn-qr-close" onclick="document.getElementById('qr-modal').classList.remove('open')">Fechar</button>
+    <div id="qr-box"></div>
+    <div class="qr-url" id="qr-url"></div>
+    <div class="qr-btns">
+      <button class="btn-qrdl" onclick="dlQR()">Baixar</button>
+      <button class="btn-qrcl" onclick="document.getElementById('qrm').classList.remove('open')">Fechar</button>
     </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<script type="module">
-import { auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, savePet, getUserPets, deletePet } from '/firebase.js';
-let currentUser=null,pets=[],editingPetId=null,selectedSex=null,selectedEmoji=null,photoBase64=null,isLost=false;
-window.authMode=function(mode){
-  document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
-  event.target.classList.add('active');
-  document.getElementById('auth-btn').textContent=mode==='login'?'Entrar':'Criar conta';
-  document.getElementById('auth-error').textContent='';
-  document.getElementById('forgot-link').style.display=mode==='login'?'block':'none';
-  window._authMode=mode;
+<script>
+var FB_CFG = {
+  apiKey: "AIzaSyACFKTkl9hni4OolOLjMdZgNpKs8QN6lvw",
+  authDomain: "tang-nfc.firebaseapp.com",
+  projectId: "tang-nfc",
+  storageBucket: "tang-nfc.firebasestorage.app",
+  messagingSenderId: "257508461118",
+  appId: "1:257508461118:web:0a824daf95946739c29f6f"
 };
-window._authMode='login';
-window.doForgotPassword=async function(){
-  const email=document.getElementById('auth-email').value.trim();
-  const errEl=document.getElementById('auth-error');
-  if(!email){errEl.textContent='Digite seu e-mail acima primeiro.';errEl.style.color='var(--accent)';return;}
-  try{
-    const mod=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-    await mod.sendPasswordResetEmail(auth,email);
-    errEl.textContent='E-mail de recuperacao enviado! Verifique sua caixa de entrada.';
-    errEl.style.color='green';
-  }catch(err){
-    const msgs={'auth/user-not-found':'E-mail nao encontrado.','auth/invalid-email':'E-mail invalido.'};
-    errEl.textContent=msgs[err.code]||'Erro ao enviar e-mail.';
-    errEl.style.color='var(--danger)';
+firebase.initializeApp(FB_CFG);
+var auth = firebase.auth();
+var db = firebase.firestore();
+
+var curUser = null, pets = [], editId = null, selSex = null, selEmoji = null, photo64 = null, isLost = false;
+var curTab = 'login';
+
+function setTab(mode) {
+  curTab = mode;
+  document.getElementById('tab-login').className = 'auth-tab' + (mode === 'login' ? ' active' : '');
+  document.getElementById('tab-register').className = 'auth-tab' + (mode === 'register' ? ' active' : '');
+  document.getElementById('auth-error').textContent = '';
+  document.getElementById('forgot-link').style.display = mode === 'login' ? 'block' : 'none';
+}
+
+function doAuth() {
+  var email = document.getElementById('auth-email').value.trim();
+  var pass = document.getElementById('auth-pass').value;
+  var errEl = document.getElementById('auth-error');
+  errEl.textContent = ''; errEl.style.color = 'var(--danger)';
+  if (!email || !pass) { errEl.textContent = 'Preencha e-mail e senha.'; return; }
+  var promise = curTab === 'login'
+    ? auth.signInWithEmailAndPassword(email, pass)
+    : auth.createUserWithEmailAndPassword(email, pass);
+  promise.catch(function(err) {
+    var msgs = {
+      'auth/user-not-found': 'Usuario nao encontrado.',
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/email-already-in-use': 'E-mail ja cadastrado.',
+      'auth/weak-password': 'Senha fraca (minimo 6 caracteres).',
+      'auth/invalid-email': 'E-mail invalido.',
+      'auth/invalid-credential': 'E-mail ou senha incorretos.'
+    };
+    errEl.textContent = msgs[err.code] || 'Erro: ' + err.message;
+  });
+}
+
+function doForgot() {
+  var email = document.getElementById('auth-email').value.trim();
+  var errEl = document.getElementById('auth-error');
+  if (!email) { errEl.textContent = 'Digite seu e-mail acima primeiro.'; errEl.style.color = 'var(--accent)'; return; }
+  auth.sendPasswordResetEmail(email).then(function() {
+    errEl.textContent = 'E-mail de recuperacao enviado!';
+    errEl.style.color = 'green';
+  }).catch(function(err) {
+    errEl.textContent = err.code === 'auth/user-not-found' ? 'E-mail nao encontrado.' : 'Erro ao enviar.';
+    errEl.style.color = 'var(--danger)';
+  });
+}
+
+function doLogout() { auth.signOut(); }
+
+auth.onAuthStateChanged(function(user) {
+  curUser = user;
+  if (user) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    loadPets();
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
   }
-};
-window.doAuth=async function(){
-  const email=document.getElementById('auth-email').value.trim();
-  const pass=document.getElementById('auth-pass').value;
-  const errEl=document.getElementById('auth-error');
-  errEl.textContent='';errEl.style.color='var(--danger)';
-  if(!email||!pass){errEl.textContent='Preencha e-mail e senha.';return;}
-  try{
-    if(window._authMode==='login')await signInWithEmailAndPassword(auth,email,pass);
-    else await createUserWithEmailAndPassword(auth,email,pass);
-  }catch(err){
-    const msgs={'auth/user-not-found':'Usuario nao encontrado.','auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'E-mail ja cadastrado.','auth/weak-password':'Senha fraca (minimo 6 caracteres).','auth/invalid-email':'E-mail invalido.','auth/invalid-credential':'E-mail ou senha incorretos.'};
-    errEl.textContent=msgs[err.code]||'Erro: '+err.message;
-  }
-};
-window.doLogout=async function(){try{await signOut(auth);}catch(e){}};
-onAuthStateChanged(auth,async function(user){
-  currentUser=user;
-  if(user){document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').style.display='block';await loadPets();}
-  else{document.getElementById('auth-screen').style.display='flex';document.getElementById('app-screen').style.display='none';}
 });
-async function loadPets(){try{pets=await getUserPets(currentUser.uid);renderPets();}catch(err){showToast('Erro: '+err.message);}}
-function renderPets(){
-  const grid=document.getElementById('pets-grid');
-  if(!pets.length){grid.innerHTML='<div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado ainda.</p></div>';return;}
-  grid.innerHTML=pets.map(function(p){
-    const scans=p.scanCount||0;
-    const badge='<span class="pet-card-scans '+(scans>0?'has-scans':'')+'">'+(scans>0?scans+' scans':'0 scans')+'</span>';
-    const avatar=p.photo?'<img class="pet-card-photo" src="'+p.photo+'" />'+'':'<div class="pet-card-avatar">'+(p.emoji||'&#x1F43E;')+'</div>';
-    const tag=p.lost?'<span class="pet-card-tag lost">PERDIDO</span>':'<span class="pet-card-tag">Tag ativa</span>';
-    return '<div class="pet-card'+(p.lost?' lost':'')+'" onclick="openDrawer(''+p.id+'')">'+badge+avatar+'<div class="pet-card-name">'+p.name+'</div><div class="pet-card-sub">'+(p.species||'')+(p.breed?' - '+p.breed:'')+'</div>'+tag+'</div>';
+
+function loadPets() {
+  db.collection('users').doc(curUser.uid).collection('pets').get().then(function(snap) {
+    pets = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderPets();
+  }).catch(function(e) { toast('Erro ao carregar: ' + e.message); });
+}
+
+function renderPets() {
+  var grid = document.getElementById('pets-grid');
+  if (!pets.length) { grid.innerHTML = '<div class="empty-state"><div class="icon">&#x1F43E;</div><p>Nenhum pet cadastrado.</p></div>'; return; }
+  grid.innerHTML = pets.map(function(p) {
+    var sc = p.scanCount || 0;
+    var badge = '<span class="pet-card-scans' + (sc > 0 ? ' has-scans' : '') + '">' + sc + ' scans</span>';
+    var av = p.photo ? '<img class="pet-card-photo" src="' + p.photo + '">' : '<div class="pet-card-avatar">' + (p.emoji || '&#x1F43E;') + '</div>';
+    var tag = p.lost ? '<span class="pet-card-tag lost">PERDIDO</span>' : '<span class="pet-card-tag">Tag ativa</span>';
+    return '<div class="pet-card' + (p.lost ? ' lost' : '') + '" onclick="openDrawer('' + p.id + '')">' + badge + av + '<div class="pet-card-name">' + p.name + '</div><div class="pet-card-sub">' + (p.species || '') + (p.breed ? ' - ' + p.breed : '') + '</div>' + tag + '</div>';
   }).join('');
 }
-window.openDrawer=function(petId){
-  petId=petId||null;editingPetId=petId;resetForm();
-  const pet=petId?pets.find(function(p){return p.id===petId;}):null;
-  document.getElementById('drawer-title').textContent=pet?'Editar: '+pet.name:'Novo Pet';
-  document.getElementById('btn-delete').style.display=pet?'block':'none';
-  document.getElementById('btn-qr').style.display=pet?'block':'none';
-  document.getElementById('lost-section').style.display=pet?'block':'none';
-  document.getElementById('lost-toggle').style.display=pet?'flex':'none';
-  if(pet){
-    document.getElementById('analytics-box').style.display='flex';
-    document.getElementById('analytics-scans').textContent=pet.scanCount||0;
-    document.getElementById('analytics-last').textContent=pet.lastScannedAt?new Date(pet.lastScannedAt).toLocaleDateString('pt-BR'):'-';
-    document.getElementById('f-name').value=pet.name||'';
-    document.getElementById('f-species').value=pet.species||'Cachorro';
-    document.getElementById('f-breed').value=pet.breed||'';
-    document.getElementById('f-age').value=pet.age||'';
-    document.getElementById('f-color').value=pet.color||'';
-    document.getElementById('f-obs').value=pet.obs||'';
-    document.getElementById('f-owner').value=pet.ownerName||'';
-    document.getElementById('f-phone').value=pet.phone||'';
-    document.getElementById('f-whatsapp').value=pet.whatsapp||'';
-    document.getElementById('f-vet').value=pet.vetPhone||'';
-    document.getElementById('f-vet-name').value=pet.vetName||'';
-    document.getElementById('f-street').value=pet.street||'';
-    document.getElementById('f-neighborhood').value=pet.neighborhood||'';
-    document.getElementById('f-city').value=pet.city||'';
-    document.getElementById('f-state').value=pet.state||'';
-    document.getElementById('f-cep').value=pet.cep||'';
-    if(pet.sex)setSex(pet.sex);
-    if(pet.emoji)selectEmojiByValue(pet.emoji);
-    if(pet.photo){photoBase64=pet.photo;document.getElementById('photo-preview').src=pet.photo;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';}
-    document.querySelectorAll('.vaccine-item').forEach(function(el){if(pet.vaccines&&pet.vaccines[el.dataset.v])el.classList.add('checked');});
-    isLost=!!pet.lost;updateLostUI();
-  }else{document.getElementById('analytics-box').style.display='none';}
+
+function openDrawer(id) {
+  id = id || null;
+  editId = id; resetForm();
+  var pet = id ? pets.find(function(p) { return p.id === id; }) : null;
+  document.getElementById('dtitle').textContent = pet ? 'Editar: ' + pet.name : 'Novo Pet';
+  document.getElementById('btn-del').style.display = pet ? 'block' : 'none';
+  document.getElementById('btn-qr').style.display = pet ? 'block' : 'none';
+  document.getElementById('lst-sec').style.display = pet ? 'block' : 'none';
+  document.getElementById('lst-tog').style.display = pet ? 'flex' : 'none';
+  if (pet) {
+    document.getElementById('abox').style.display = 'flex';
+    document.getElementById('a-scans').textContent = pet.scanCount || 0;
+    document.getElementById('a-last').textContent = pet.lastScannedAt ? new Date(pet.lastScannedAt).toLocaleDateString('pt-BR') : '-';
+    var fields = { name: 'f-name', breed: 'f-breed', age: 'f-age', color: 'f-color', obs: 'f-obs', ownerName: 'f-owner', phone: 'f-phone', whatsapp: 'f-whatsapp', vetPhone: 'f-vet', vetName: 'f-vetname', street: 'f-street', neighborhood: 'f-neigh', city: 'f-city', state: 'f-state', cep: 'f-cep' };
+    Object.keys(fields).forEach(function(k) { document.getElementById(fields[k]).value = pet[k] || ''; });
+    document.getElementById('f-species').value = pet.species || 'Cachorro';
+    if (pet.sex) setSex(pet.sex);
+    if (pet.emoji) {
+      document.querySelectorAll('.emoji-opt').forEach(function(e) {
+        e.classList.toggle('selected', e.dataset.e === pet.emoji);
+        if (e.dataset.e === pet.emoji) selEmoji = pet.emoji;
+      });
+    }
+    if (pet.photo) { photo64 = pet.photo; document.getElementById('photo-prev').src = pet.photo; document.getElementById('photo-prev').style.display = 'block'; document.getElementById('photo-ph').style.display = 'none'; }
+    document.querySelectorAll('.vi').forEach(function(el) { if (pet.vaccines && pet.vaccines[el.dataset.v]) el.classList.add('checked'); });
+    isLost = !!pet.lost; updLost();
+  } else { document.getElementById('abox').style.display = 'none'; }
   document.getElementById('drawer-overlay').classList.add('open');
-};
-window.closeDrawer=function(){document.getElementById('drawer-overlay').classList.remove('open');};
-window.closeDrawerOnBg=function(e){if(e.target===document.getElementById('drawer-overlay'))window.closeDrawer();};
-window.toggleLost=function(){isLost=!isLost;updateLostUI();};
-function updateLostUI(){
-  const sw=document.getElementById('lost-switch'),lbl=document.getElementById('lost-label'),sub=document.getElementById('lost-sub'),tgl=document.getElementById('lost-toggle');
-  if(isLost){sw.classList.add('on');tgl.classList.add('active');lbl.textContent='Pet PERDIDO!';sub.textContent='A tag mostrara alerta vermelho';}
-  else{sw.classList.remove('on');tgl.classList.remove('active');lbl.textContent='Pet esta em casa';sub.textContent='Ative se o pet estiver perdido';}
 }
-function resetForm(){
-  ['f-name','f-breed','f-age','f-color','f-obs','f-owner','f-phone','f-whatsapp','f-vet','f-vet-name','f-street','f-neighborhood','f-city','f-state','f-cep'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('f-species').value='Cachorro';
-  selectedSex=null;selectedEmoji=null;photoBase64=null;isLost=false;
-  document.getElementById('photo-preview').style.display='none';
-  document.getElementById('photo-placeholder').style.display='flex';
-  document.querySelectorAll('.emoji-opt').forEach(function(e){e.classList.remove('selected');});
-  const first=document.querySelector('.emoji-opt');if(first){first.classList.add('selected');selectedEmoji=first.dataset.emoji;}
-  document.querySelectorAll('.sex-btn').forEach(function(b){b.className='sex-btn';});
-  document.querySelectorAll('.vaccine-item').forEach(function(el){el.classList.remove('checked');});
-  updateLostUI();
+
+function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
+function bgClose(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
+function togLost() { isLost = !isLost; updLost(); }
+function updLost() {
+  var sw = document.getElementById('lst-sw'), lbl = document.getElementById('lst-lbl'), sub = document.getElementById('lst-sub'), tog = document.getElementById('lst-tog');
+  if (isLost) { sw.classList.add('on'); tog.classList.add('active'); lbl.textContent = 'Pet PERDIDO!'; sub.textContent = 'Tag mostrara alerta vermelho'; }
+  else { sw.classList.remove('on'); tog.classList.remove('active'); lbl.textContent = 'Pet esta em casa'; sub.textContent = 'Ative se perdido'; }
 }
-window.selectEmoji=function(el){document.querySelectorAll('.emoji-opt').forEach(function(e){e.classList.remove('selected');});el.classList.add('selected');selectedEmoji=el.dataset.emoji;};
-function selectEmojiByValue(emoji){document.querySelectorAll('.emoji-opt').forEach(function(e){e.classList.remove('selected');if(e.dataset.emoji===emoji){e.classList.add('selected');selectedEmoji=emoji;}});}
-window.setSex=function(sex){selectedSex=sex;document.getElementById('btn-male').className='sex-btn'+(sex==='M'?' active-male':'');document.getElementById('btn-female').className='sex-btn'+(sex==='F'?' active-female':'');};
-window.toggleVaccine=function(el){el.classList.toggle('checked');};
-window.handlePhoto=function(input){
-  const file=input.files[0];if(!file)return;
-  if(file.size>2*1024*1024){showToast('Foto muito grande. Maximo 2MB.');return;}
-  const reader=new FileReader();
-  reader.onload=function(e){photoBase64=e.target.result;document.getElementById('photo-preview').src=photoBase64;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';};
+function resetForm() {
+  ['f-name','f-breed','f-age','f-color','f-obs','f-owner','f-phone','f-whatsapp','f-vet','f-vetname','f-street','f-neigh','f-city','f-state','f-cep'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('f-species').value = 'Cachorro';
+  selSex = null; selEmoji = null; photo64 = null; isLost = false;
+  document.getElementById('photo-prev').style.display = 'none';
+  document.getElementById('photo-ph').style.display = 'flex';
+  document.querySelectorAll('.emoji-opt').forEach(function(e) { e.classList.remove('selected'); });
+  var first = document.querySelector('.emoji-opt');
+  if (first) { first.classList.add('selected'); selEmoji = first.dataset.e; }
+  document.querySelectorAll('.sex-btn').forEach(function(b) { b.className = 'sex-btn'; });
+  document.querySelectorAll('.vi').forEach(function(el) { el.classList.remove('checked'); });
+  updLost();
+}
+function pickEmoji(el) { document.querySelectorAll('.emoji-opt').forEach(function(e) { e.classList.remove('selected'); }); el.classList.add('selected'); selEmoji = el.dataset.e; }
+function setSex(s) { selSex = s; document.getElementById('bm').className = 'sex-btn' + (s === 'M' ? ' am' : ''); document.getElementById('bf').className = 'sex-btn' + (s === 'F' ? ' af' : ''); }
+function togV(el) { el.classList.toggle('checked'); }
+function handlePhoto(input) {
+  var file = input.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Foto muito grande. Max 2MB.'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) { photo64 = e.target.result; document.getElementById('photo-prev').src = photo64; document.getElementById('photo-prev').style.display = 'block'; document.getElementById('photo-ph').style.display = 'none'; };
   reader.readAsDataURL(file);
-};
-window.savePetForm=async function(){
-  const name=document.getElementById('f-name').value.trim();
-  const ownerName=document.getElementById('f-owner').value.trim();
-  const phone=document.getElementById('f-phone').value.trim();
-  if(!name){showToast('Informe o nome do pet.');return;}
-  if(!ownerName||!phone){showToast('Informe nome e telefone do dono.');return;}
-  const vaccines={};
-  document.querySelectorAll('.vaccine-item').forEach(function(el){vaccines[el.dataset.v]=el.classList.contains('checked');});
-  const petData={name:name,ownerName:ownerName,phone:phone,species:document.getElementById('f-species').value,breed:document.getElementById('f-breed').value.trim(),age:document.getElementById('f-age').value.trim(),color:document.getElementById('f-color').value.trim(),obs:document.getElementById('f-obs').value.trim(),whatsapp:document.getElementById('f-whatsapp').value.trim(),vetPhone:document.getElementById('f-vet').value.trim(),vetName:document.getElementById('f-vet-name').value.trim(),street:document.getElementById('f-street').value.trim(),neighborhood:document.getElementById('f-neighborhood').value.trim(),city:document.getElementById('f-city').value.trim(),state:document.getElementById('f-state').value.trim(),cep:document.getElementById('f-cep').value.trim(),sex:selectedSex,emoji:selectedEmoji,photo:photoBase64||null,vaccines:vaccines,lost:isLost,updatedAt:new Date().toISOString()};
-  try{
-    const btn=document.querySelector('.btn-save');btn.textContent='Salvando...';btn.disabled=true;
-    await savePet(currentUser.uid,petData,editingPetId);
-    await loadPets();window.closeDrawer();
-    showToast(isLost?'Pet marcado como PERDIDO!':'Pet salvo com sucesso!');
-  }catch(err){showToast('Erro: '+err.message);}
-  finally{const btn=document.querySelector('.btn-save');btn.textContent='Salvar';btn.disabled=false;}
-};
-window.deletePetForm=async function(){
-  if(!editingPetId)return;
-  if(!confirm('Excluir este pet?'))return;
-  try{await deletePet(currentUser.uid,editingPetId);await loadPets();window.closeDrawer();showToast('Pet excluido.');}
-  catch(err){showToast('Erro: '+err.message);}
-};
-window.showQR=function(){
-  if(!editingPetId)return;
-  const slug=currentUser.uid+'_'+editingPetId;
-  const url=location.origin+'/pet/'+slug;
-  const pet=pets.find(function(p){return p.id===editingPetId;});
-  document.getElementById('qr-pet-name').textContent='QR Code - '+(pet?pet.name:'Pet');
-  document.getElementById('qr-url-text').textContent=url;
-  const c=document.getElementById('qr-container');c.innerHTML='';
-  new QRCode(c,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
-  document.getElementById('qr-modal').classList.add('open');
-};
-window.downloadQR=function(){
-  const canvas=document.querySelector('#qr-container canvas');if(!canvas)return;
-  const link=document.createElement('a');link.download='petnfc-qrcode.png';link.href=canvas.toDataURL();link.click();
-};
-window.showToast=function(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},3000);
-};
+}
+function savePet() {
+  var name = document.getElementById('f-name').value.trim();
+  var ownerName = document.getElementById('f-owner').value.trim();
+  var phone = document.getElementById('f-phone').value.trim();
+  if (!name) { toast('Informe o nome do pet.'); return; }
+  if (!ownerName || !phone) { toast('Informe nome e telefone do dono.'); return; }
+  var vaccines = {};
+  document.querySelectorAll('.vi').forEach(function(el) { vaccines[el.dataset.v] = el.classList.contains('checked'); });
+  var data = { name: name, ownerName: ownerName, phone: phone, species: document.getElementById('f-species').value, breed: document.getElementById('f-breed').value.trim(), age: document.getElementById('f-age').value.trim(), color: document.getElementById('f-color').value.trim(), obs: document.getElementById('f-obs').value.trim(), whatsapp: document.getElementById('f-whatsapp').value.trim(), vetPhone: document.getElementById('f-vet').value.trim(), vetName: document.getElementById('f-vetname').value.trim(), street: document.getElementById('f-street').value.trim(), neighborhood: document.getElementById('f-neigh').value.trim(), city: document.getElementById('f-city').value.trim(), state: document.getElementById('f-state').value.trim(), cep: document.getElementById('f-cep').value.trim(), sex: selSex, emoji: selEmoji, photo: photo64 || null, vaccines: vaccines, lost: isLost, updatedAt: new Date().toISOString() };
+  var btn = document.querySelector('.btn-save'); btn.textContent = 'Salvando...'; btn.disabled = true;
+  var col = db.collection('users').doc(curUser.uid).collection('pets');
+  var promise = editId ? col.doc(editId).set(data, { merge: true }) : col.add(data);
+  promise.then(function() {
+    loadPets(); closeDrawer();
+    toast(isLost ? 'Pet marcado como PERDIDO!' : 'Pet salvo!');
+  }).catch(function(e) { toast('Erro: ' + e.message); })
+f:rcFcS clec}
+function delPet() {
+  if (!editId) return;
+  if (!confirm('Excluir este pet?')) return;
+  db.collection('users').doc(curUser.uid).collection('pets').doc(editId).delete().then(function() {
+    loadPets(); closeDrawer(); toast('Pet excluido.');
+  }).catch(function(e) { toast('Erro: ' + e.message); });
+}
+function showQR() {
+  if (!editId) return;
+  var slug = curUser.uid + '_' + editId;
+  var url = location.origin + '/pet/' + slug;
+  var pet = pets.find(function(p) { return p.id === editId; });
+  document.getElementById('qr-title').textContent = 'QR Code - ' + (pet ? pet.name : 'Pet');
+  document.getElementById('qr-url').textContent = url;
+  var box = document.getElementById('qr-box'); box.innerHTML = '';
+  new QRCode(box, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+  document.getElementById('qrm').classList.add('open');
+}
+function dlQR() {
+  var canvas = document.querySelector('#qr-box canvas'); if (!canvas) return;
+  var a = document.createElement('a'); a.download = 'petnfc-qrcode.png'; a.href = canvas.toDataURL(); a.click();
+}
+function toast(msg) {
+  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
 </script>
 </body>
 </html>
