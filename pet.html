@@ -114,7 +114,7 @@ const EJS_KEY = 'wMKdLso1I33GtEACr';
 const EJS_SVC = 'service_9m9t14l';
 const EJS_TPL = 'template_s8de3rq';
 
-// Lista OFICIAL de vacinas — somente essas 9, nessa ordem
+// Lista OFICIAL de vacinas â somente essas 9, nessa ordem
 const VACINAS = [
   { key: 'castrado',     label: 'Castrado'     },
   { key: 'raiva',        label: 'Raiva'         },
@@ -131,7 +131,8 @@ async function sendEmail(pet) {
   try {
     emailjs.init(EJS_KEY);
     var t = new Date().toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
-    await emailjs.send(EJS_SVC, EJS_TPL, { pet_name: pet.name, owner_name: pet.ownerName || 'Dono', scan_time: t, name: pet.ownerName || 'Dono', email: 'yuripimenta12@gmail.com', pet_url: location.href });
+    await emailjs.send(EJS_SVC, EJS_TPL, { pet_name: pet.name, owner_name: pet.ownerName || 'Dono', scan_time: t, name: pet.ownerName || 'Dono', email: 'yuripimenta12@gmail.com', pet_url: location.href,
+        maps_url: addr.length ? 'https://www.google.com/maps/search/' + encodeURIComponent(addr.join(', ')) : 'Endereco nao informado' });
   } catch(e) { console.warn('[EmailJS]', e); }
 }
 
@@ -199,7 +200,8 @@ function renderPet(pet) {
   var addr = [pet.street, pet.neighborhood, pet.city, pet.state, pet.cep].filter(Boolean);
   if (addr.length) {
     document.getElementById('address-box').style.display = 'flex';
-    document.getElementById('p-address').textContent = addr.join(', ');
+    var mapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(addr.join(', '));
+    document.getElementById('p-address').innerHTML = '<a href="' + mapsUrl + '" target="_blank" style="color:var(--orange);font-weight:700;text-decoration:none;">' + addr.join(', ') + ' &#x1F4CD;</a>';
   }
   var phone = (pet.phone || '').replace(/\D/g, '');
   var whats = (pet.whatsapp || pet.phone || '').replace(/\D/g, '');
