@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🐾 Encontrei um pet!</title>
+  <title>ð¾ Encontrei um pet!</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#FF8320" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -74,35 +74,35 @@
 <body>
 <div id="state-loading"><div class="spinner"></div><p style="color:#414141;margin-top:1rem">Carregando dados do pet...</p></div>
 <div id="state-error" style="display:none">
-  <div class="icon">😕</div><h2>Tag não encontrada</h2>
-  <p>Este link pode ser inválido ou o pet foi removido.</p>
-  <a href="/">Ir para o início</a>
+  <div class="icon">ð</div><h2>Tag nÃ£o encontrada</h2>
+  <p>Este link pode ser invÃ¡lido ou o pet foi removido.</p>
+  <a href="/">Ir para o inÃ­cio</a>
 </div>
 <div id="state-pet">
   <div class="pet-header" id="pet-header">
     <img class="pet-photo" id="p-photo" src="" alt="foto" style="display:none" />
-    <div class="pet-emoji-wrap" id="p-emoji-wrap">🐾</div>
+    <div class="pet-emoji-wrap" id="p-emoji-wrap">ð¾</div>
     <h1 id="p-name">Carregando...</h1>
-    <p class="sub" id="p-sub">—</p>
+    <p class="sub" id="p-sub">â</p>
     <span class="sex-badge" id="p-sex" style="display:none"></span>
   </div>
   <div class="pet-page">
     <div id="banner-container"></div>
     <div class="info-grid" id="info-grid"></div>
-    <div class="vaccines-section" id="vaccines-section" style="display:none"><div class="lbl">💉 Vacinas</div><div class="vaccines-list" id="vaccines-list"></div></div>
-    <div class="obs-box" id="obs-box" style="display:none"><div class="lbl">⚠️ Observações</div><p id="p-obs"></p></div>
+    <div class="vaccines-section" id="vaccines-section" style="display:none"><div class="lbl">ð Vacinas</div><div class="vaccines-list" id="vaccines-list"></div></div>
+    <div class="obs-box" id="obs-box" style="display:none"><div class="lbl">â ï¸ ObservaÃ§Ãµes</div><p id="p-obs"></p></div>
     <div class="address-box" id="address-box" style="display:none">
-      <div class="addr-icon">📍</div>
-      <div class="addr-content"><div class="lbl">Endereço do Dono</div><p id="p-address"></p></div>
+      <div class="addr-icon">ð</div>
+      <div class="addr-content"><div class="lbl">EndereÃ§o do Dono</div><p id="p-address"></p></div>
     </div>
     <div class="contact-section" id="contact-section"></div>
-    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> · Identifique seu pet com NFC & QR Code</p></div>
+    <div class="footer"><p>Tag gerada por <a href="/">PetNFC</a> Â· Identifique seu pet com NFC & QR Code</p></div>
   </div>
 </div>
 <script type="module">
 import { getPetBySlug, incrementScan } from '/firebase.js';
 const EJS_KEY='wMKdLso1I33GtEACr', EJS_SVC='service_9m9t14l', EJS_TPL='template_s8de3rq';
-const vNames={raiva:'Raiva',v8v10:'V8/V10',gripe:'Gripe',giardia:'Giardia',leptospirose:'Leptospirose',leishmaniose:'Leishmaniose'};
+const vNames = { castrado:'Castrado', raiva:'Raiva', gripe:'Gripe', giardia:'Giardia', v3v4v5:'V3/V4/V5', v8v10:'V8/V10', leishmaniose:'Leishmaniose', desparasitado:'Desparasitado', vermifugado:'Vermifugado' };
 async function sendEmail(pet){try{emailjs.init(EJS_KEY);const t=new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});await emailjs.send(EJS_SVC,EJS_TPL,{pet_name:pet.name,owner_name:pet.ownerName||'Dono',scan_time:t,name:pet.ownerName||'Dono',email:'yuripimenta12@gmail.com',pet_url:location.href});}catch(e){console.warn('[EmailJS]',e);}}
 function showError(){document.getElementById('state-loading').style.display='none';document.getElementById('state-error').style.display='flex';}
 async function init(){
@@ -119,17 +119,17 @@ async function init(){
   }catch(e){console.error(e);showError();}
 }
 function renderPet(pet){
-  document.title='🐾 '+pet.name+' — PetNFC';
+  document.title='ð¾ '+pet.name+' â PetNFC';
   if(pet.lost)document.getElementById('pet-header').classList.add('lost');
   if(pet.photo){document.getElementById('p-photo').src=pet.photo;document.getElementById('p-photo').style.display='block';document.getElementById('p-emoji-wrap').style.display='none';}
-  else{document.getElementById('p-emoji-wrap').textContent=pet.emoji||'🐾';}
+  else{document.getElementById('p-emoji-wrap').textContent=pet.emoji||'ð¾';}
   document.getElementById('p-name').textContent=pet.name;
-  document.getElementById('p-sub').textContent=[pet.species,pet.breed,pet.age].filter(Boolean).join(' · ')||'—';
-  if(pet.sex){const el=document.getElementById('p-sex');el.style.display='inline-block';el.textContent=pet.sex==='M'?'♂ Macho':'♀ Fêmea';}
+  document.getElementById('p-sub').textContent=[pet.species,pet.breed,pet.age].filter(Boolean).join(' Â· ')||'â';
+  if(pet.sex){const el=document.getElementById('p-sex');el.style.display='inline-block';el.textContent=pet.sex==='M'?'â Macho':'â FÃªmea';}
   document.getElementById('banner-container').innerHTML=pet.lost
-    ?'<div class="lost-banner"><div class="icon">🚨</div><div><strong>Pet Perdido!</strong><p>Este pet está desaparecido. Contate o dono urgente!</p></div></div>'
-    :'<div class="found-banner"><div class="icon">🔔</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
-  const info=[pet.species&&{l:'Espécie',v:pet.species},pet.breed&&{l:'Raça',v:pet.breed},pet.age&&{l:'Idade',v:pet.age},pet.color&&{l:'Cor',v:pet.color}].filter(Boolean);
+    ?'<div class="lost-banner"><div class="icon">ð¨</div><div><strong>Pet Perdido!</strong><p>Este pet estÃ¡ desaparecido. Contate o dono urgente!</p></div></div>'
+    :'<div class="found-banner"><div class="icon">ð</div><div><strong>Pet encontrado!</strong><p>Por favor entre em contato com o dono abaixo.</p></div></div>';
+  const info=[pet.species&&{l:'EspÃ©cie',v:pet.species},pet.breed&&{l:'RaÃ§a',v:pet.breed},pet.age&&{l:'Idade',v:pet.age},pet.color&&{l:'Cor',v:pet.color}].filter(Boolean);
   document.getElementById('info-grid').innerHTML=info.map(i=>'<div class="info-pill"><div class="lbl">'+i.l+'</div><div class="val">'+i.v+'</div></div>').join('');
   if(pet.vaccines&&Object.keys(pet.vaccines).length){document.getElementById('vaccines-section').style.display='block';document.getElementById('vaccines-list').innerHTML=Object.entries(pet.vaccines).map(([k,v])=>'<div class="vac-item"><div class="vac-dot '+(v?'yes':'no')+'"></div>'+(vNames[k]||k)+'</div>').join('');}
   if(pet.obs){document.getElementById('obs-box').style.display='block';document.getElementById('p-obs').textContent=pet.obs;}
@@ -138,11 +138,11 @@ function renderPet(pet){
   const ph=(pet.phone||'').replace(/\D/g,''),wh=(pet.whatsapp||pet.phone||'').replace(/\D/g,'');
   let c='';
   if(pet.ownerName&&pet.phone){
-    c+='<a class="contact-btn" href="tel:+55'+ph+'"><div class="contact-icon call">📞</div><div class="contact-info"><div class="name">'+pet.ownerName+'</div><div class="phone">'+pet.phone+'</div></div><span class="contact-cta">Ligar</span></a>';
-    c+='<a class="contact-btn" href="https://wa.me/55'+wh+'?text='+encodeURIComponent('Olá! Encontrei seu pet '+pet.name+' 🐾')+'" target="_blank"><div class="contact-icon whats">💬</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">'+(pet.whatsapp||pet.phone)+'</div></div><span class="contact-cta">Chamar</span></a>';
+    c+='<a class="contact-btn" href="tel:+55'+ph+'"><div class="contact-icon call">ð</div><div class="contact-info"><div class="name">'+pet.ownerName+'</div><div class="phone">'+pet.phone+'</div></div><span class="contact-cta">Ligar</span></a>';
+    c+='<a class="contact-btn" href="https://wa.me/55'+wh+'?text='+encodeURIComponent('OlÃ¡! Encontrei seu pet '+pet.name+' ð¾')+'" target="_blank"><div class="contact-icon whats">ð¬</div><div class="contact-info"><div class="name">WhatsApp</div><div class="phone">'+(pet.whatsapp||pet.phone)+'</div></div><span class="contact-cta">Chamar</span></a>';
   }
-  if(pet.vetPhone){const vp=pet.vetPhone.replace(/\D/g,'');c+='<a class="contact-btn" href="tel:+55'+vp+'"><div class="contact-icon vet">🏥</div><div class="contact-info"><div class="name">'+(pet.vetName||'Veterinário')+'</div><div class="phone">'+pet.vetPhone+'</div></div><span class="contact-cta">Ligar</span></a>';}
-  document.getElementById('contact-section').innerHTML='<h3>📞 Contatos</h3>'+c;
+  if(pet.vetPhone){const vp=pet.vetPhone.replace(/\D/g,'');c+='<a class="contact-btn" href="tel:+55'+vp+'"><div class="contact-icon vet">ð¥</div><div class="contact-info"><div class="name">'+(pet.vetName||'VeterinÃ¡rio')+'</div><div class="phone">'+pet.vetPhone+'</div></div><span class="contact-cta">Ligar</span></a>';}
+  document.getElementById('contact-section').innerHTML='<h3>ð Contatos</h3>'+c;
   document.getElementById('state-loading').style.display='none';
   document.getElementById('state-pet').style.display='block';
 }
