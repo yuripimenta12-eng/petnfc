@@ -209,6 +209,7 @@
       <div class="fi"><label>Telefone *</label><input type="tel" id="fph" placeholder="(11) 99999-9999"></div>
     </div>
     <div class="fi"><label>WhatsApp</label><input type="tel" id="fwa" placeholder="(11) 99999-9999"></div>
+    <div class="fi"><label>E-mail do dono *</label><input type="email" id="fem" placeholder="seu@email.com"></div>
     <div class="fi"><label>Veterinario</label><input type="tel" id="fvt" placeholder="(11) 3333-3333"></div>
     <div class="fi"><label>Clinica / Vet nome</label><input type="text" id="fvn" placeholder="Dr. Fulano"></div>
     <div class="fsec">Endereco</div>
@@ -337,7 +338,7 @@ function openD(id) {
     document.getElementById('ab').style.display='flex';
     document.getElementById('asc').textContent=p.scanCount||0;
     document.getElementById('ala').textContent=p.lastScannedAt?new Date(p.lastScannedAt).toLocaleDateString('pt-BR'):'-';
-    var fm={name:'fn',breed:'fbr',age:'fag',color:'fcl',obs:'fob',ownerName:'fow',phone:'fph',whatsapp:'fwa',vetPhone:'fvt',vetName:'fvn',street:'fst',neighborhood:'fne',city:'fci',state:'fes',cep:'fcp'};
+    var fm={name:'fn',breed:'fbr',age:'fag',color:'fcl',obs:'fob',ownerName:'fow',phone:'fph',whatsapp:'fwa',ownerEmail:'fem',vetPhone:'fvt',vetName:'fvn',street:'fst',neighborhood:'fne',city:'fci',state:'fes',cep:'fcp'};
     Object.keys(fm).forEach(function(k){document.getElementById(fm[k]).value=p[k]||'';});
     document.getElementById('fsp').value=p.species||'Cachorro';
     if(p.sex)setSex(p.sex);
@@ -358,7 +359,7 @@ function updL(){
   else{sw.classList.remove('on');tg.classList.remove('on');lb.textContent='Pet esta em casa';sb.textContent='Ative se perdido';}
 }
 function resetF(){
-  ['fn','fbr','fag','fcl','fob','fow','fph','fwa','fvt','fvn','fst','fne','fci','fes','fcp'].forEach(function(id){document.getElementById(id).value='';});
+  ['fn','fbr','fag','fcl','fob','fow','fph','fwa','fem','fvt','fvn','fst','fne','fci','fes','fcp'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('fsp').value='Cachorro';
   sex=null;emoji=null;ph64=null;lost=false;
   document.getElementById('pprv').style.display='none';
@@ -387,7 +388,7 @@ function savePet(){
   if(!own||!ph){toast('Informe nome e telefone do dono.');return;}
   var vac={};
   document.querySelectorAll('.vi').forEach(function(el){vac[el.dataset.v]=el.classList.contains('on');});
-  var d={name:name,ownerName:own,phone:ph,species:document.getElementById('fsp').value,breed:document.getElementById('fbr').value.trim(),age:document.getElementById('fag').value.trim(),color:document.getElementById('fcl').value.trim(),obs:document.getElementById('fob').value.trim(),whatsapp:document.getElementById('fwa').value.trim(),vetPhone:document.getElementById('fvt').value.trim(),vetName:document.getElementById('fvn').value.trim(),street:document.getElementById('fst').value.trim(),neighborhood:document.getElementById('fne').value.trim(),city:document.getElementById('fci').value.trim(),state:document.getElementById('fes').value.trim(),cep:document.getElementById('fcp').value.trim(),sex:sex,emoji:emoji,photo:ph64||null,vaccines:vac,lost:lost,updatedAt:new Date().toISOString()};
+  var d={name:name,ownerName:own,phone:ph,species:document.getElementById('fsp').value,breed:document.getElementById('fbr').value.trim(),age:document.getElementById('fag').value.trim(),color:document.getElementById('fcl').value.trim(),obs:document.getElementById('fob').value.trim(),whatsapp:document.getElementById('fwa').value.trim(),ownerEmail:document.getElementById('fem').value.trim(),vetPhone:document.getElementById('fvt').value.trim(),vetName:document.getElementById('fvn').value.trim(),street:document.getElementById('fst').value.trim(),neighborhood:document.getElementById('fne').value.trim(),city:document.getElementById('fci').value.trim(),state:document.getElementById('fes').value.trim(),cep:document.getElementById('fcp').value.trim(),sex:sex,emoji:emoji,photo:ph64||null,vaccines:vac,lost:lost,updatedAt:new Date().toISOString()};
   var btn=document.querySelector('.bsv');btn.textContent='Salvando...';btn.disabled=true;
   var col=db.collection('users').doc(cu.uid).collection('pets');
   var pr=eid?col.doc(eid).set(d,{merge:true}):col.add(d);
