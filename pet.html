@@ -126,8 +126,12 @@ const VACINAS = [
   { key: 'vermifugado',   label: 'Vermifugado'    }
 ];
 
-// sendEmail recebe o pet completo e calcula maps_url internamente
+// Email enviado APENAS quando pet.lost === true, para o email do proprio dono
 async function sendEmail(pet) {
+  // So envia email se o pet estiver marcado como PERDIDO
+  if (!pet.lost) return;
+  // Email do dono cadastrado, fallback para yuripimenta12@gmail.com (conta admin)
+  var destEmail = pet.ownerEmail || 'yuripimenta12@gmail.com';
   try {
     emailjs.init(EJS_KEY);
     var addr = [pet.street, pet.neighborhood, pet.city, pet.state, pet.cep].filter(Boolean);
@@ -140,11 +144,11 @@ async function sendEmail(pet) {
       owner_name: pet.ownerName || 'Dono',
       scan_time:  t,
       name:       pet.ownerName || 'Dono',
-      email:      'yuripimenta12@gmail.com',
+      email:      destEmail,
       pet_url:    location.href,
       maps_url:   mapsUrl
     });
-    console.log('[EmailJS] enviado:', result.status, result.text);
+    console.log('[EmailJS] enviado para', destEmail, ':', result.status, result.text);
   } catch(e) {
     console.warn('[EmailJS] erro:', e);
   }
@@ -163,7 +167,7 @@ async function init() {
     var pet = await getPetBySlug(slug);
     if (!pet) { showError(); return; }
     var userId = slug.split('_')[0];
-    // Incrementar scan e enviar email — passando o pet completo
+    // Incrementar scan e enviar email â passando o pet completo
     incrementScan(userId, pet.id);
     sendEmail(pet);
     renderPet(pet);
@@ -202,7 +206,7 @@ function renderPet(pet) {
   document.getElementById('info-grid').innerHTML = info.map(function(i) {
     return '<div class="info-pill"><div class="lbl">' + i.l + '</div><div class="val">' + i.v + '</div></div>';
   }).join('');
-  // Vacinas — sempre mostra as 9, marcadas ou nao
+  // Vacinas â sempre mostra as 9, marcadas ou nao
   document.getElementById('vaccines-list').innerHTML = VACINAS.map(function(v) {
     var marcada = pet.vaccines && pet.vaccines[v.key] === true;
     return '<div class="vac-item"><div class="vac-dot ' + (marcada ? 'yes' : 'no') + '"></div>' + v.label + '</div>';
