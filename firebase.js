@@ -1,16 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, doc, setDoc, getDoc,
-  collection, addDoc, getDocs
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  collection, addDoc, getDocs,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  getAuth, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged, signOut
+  getAuth, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// A API key do Firebase e publica por design - necessaria no front-end.
-// A seguranca real e feita pelas Firebase Security Rules no console do Firebase.
 const firebaseConfig = {
   apiKey: "AIzaSyACFKTkl9hni4OolOLjMdZgNpKs8QN6lvw",
   authDomain: "tang-nfc.firebaseapp.com",
@@ -21,67 +20,54 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+
+export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail };
 
 export async function savePet(userId, petData, petId = null) {
-  try {
-    const petsRef = collection(db, "users", userId, "pets");
-    if (petId) {
-      await setDoc(doc(petsRef, petId), petData, { merge: true });
-      return petId;
-    } else {
-      const ref = await addDoc(petsRef, petData);
-      return ref.id;
-    }
-  } catch (err) {
-    console.error("[savePet]", err);
-    throw new Error("Nao foi possivel salvar o pet. Verifique sua conexao e tente novamente.");
-  }
-}
-
-export async function getPetBySlug(slug) {
-  try {
-    const [userId, petId] = slug.split("_");
-    if (!userId || !petId) return null;
-    const snap = await getDoc(doc(db, "users", userId, "pets", petId));
-    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-  } catch (err) {
-    console.error("[getPetBySlug]", err);
-    throw new Error("Nao foi possivel carregar os dados do pet.");
+  const col = collection(db, "users", userId, "pets");
+  if (petId) {
+    await setDoc(doc(col, petId), petData, { merge: true });
+    return petId;
+  } else {
+    const ref = await addDoc(col, petData);
+    return ref.id;
   }
 }
 
 export async function getUserPets(userId) {
-  try {
-    const snap = await getDocs(collection(db, "users", userId, "pets"));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (err) {
-    console.error("[getUserPets]", err);
-    throw new Error("Nao foi possivel carregar seus pets. Verifique sua conexao.");
-  }
+  const col = collection(db, "users", userId, "pets");
+  const snap = await getDocs(col);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 export async function deletePet(userId, petId) {
-  try {
-    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await deleteDoc(doc(db, "users", userId, "pets", petId));
-  } catch (err) {
-    console.error("[deletePet]", err);
-    throw new Error("Nao foi possivel excluir o pet. Tente novamente.");
-  }
+  await setDoc(doc(db, "users", userId, "pets", petId), { deleted: true }, { merge: true });
+}
+
+export async function getPetBySlug(slug) {
+  const parts = slug.split("_");
+  if (parts.length < 2) return null;
+  const userId = parts[0];
+  const petId = parts.slice(1).join("_");
+  const ref = doc(db, "users", userId, "pets", petId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() };
 }
 
 export async function incrementScan(userId, petId) {
+  const now = new Date().toISOString();
   try {
-    const { updateDoc, increment } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await updateDoc(doc(db, "users", userId, "pets", petId), {
-      scanCount: increment(1),
-      lastScannedAt: new Date().toISOString()
-    });
-  } catch (err) {
-    console.warn("[incrementScan]", err);
+    await addDoc(collection(db, "scans"), { userId, petId, scannedAt: now });
+  } catch (e) {
+    console.warn("[incrementScan] scans:", e.message);
+  }
+  try {
+    const petRef = doc(db, "users", userId, "pets", petId);
+    await updateDoc(petRef, { scanCount: increment(1), lastScannedAt: now });
+  } catch (e) {
+    console.warn("[incrementScan] updateDoc:", e.message);
   }
 }
-
-export { db, auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut };
